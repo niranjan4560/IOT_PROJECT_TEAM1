@@ -1,0 +1,15 @@
+controller,kind,occupancy_input,days,cooling_kwh_thermal,fan_kwh_electrical,occupied_steps,comfort_violation_steps,comfort_violation_pct,comfort_violation_kelvin_hours,co2_violation_steps,ac_switches_per_day,mean_occupied_temp_c,reward
+always_comfort,fixed,-,6,850.61,37.498,344,0,0.0,0.0,0,0.0,24.0,-280.53
+timetable_07_20,timetable,-,6,509.52,20.311,344,0,0.0,0.0,0,2.0,24.05,-165.89
+rules[oracle],rules,oracle,6,366.73,12.26,344,1,0.3,0.01,0,14.7,24.02,-117.08
+rules[lstm],rules,lstm,6,361.67,12.282,344,2,0.6,0.07,0,17.0,24.26,-116.01
+rules[mamba],rules,mamba,6,422.85,15.06,344,4,1.2,0.08,0,14.0,24.18,-136.38
+rules[random_forest],rules,random_forest,6,405.47,14.192,344,2,0.6,0.07,0,16.5,24.23,-130.44
+dqn_raw[oracle],dqn_raw,oracle,6,127.55,2.192,344,77,22.4,2.53,0,23.5,25.76,-53.8
+dqn_raw[lstm],dqn_raw,lstm,6,128.52,2.322,344,83,24.1,3.13,0,25.3,25.75,-57.82
+dqn_raw[mamba],dqn_raw,mamba,6,133.77,2.322,344,72,20.9,2.79,0,24.2,25.63,-57.26
+dqn_raw[random_forest],dqn_raw,random_forest,6,130.01,2.3,344,89,25.9,3.35,0,25.3,25.73,-59.55
+dqn_safe[oracle],dqn_safe,oracle,6,137.96,2.387,344,11,3.2,0.26,0,15.2,25.42,-43.37
+dqn_safe[lstm],dqn_safe,lstm,6,150.86,2.756,344,24,7.0,0.59,0,17.7,25.42,-49.42
+dqn_safe[mamba],dqn_safe,mamba,6,156.13,2.778,344,34,9.9,1.29,0,17.2,25.27,-55.11
+dqn_safe[random_forest],dqn_safe,random_forest,6,152.79,2.713,344,42,12.2,1.2,0,17.3,25.39,-53.57

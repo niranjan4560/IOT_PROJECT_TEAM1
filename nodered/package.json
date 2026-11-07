@@ -1,0 +1,15 @@
+{
+  "name": "smartclass-nodered",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node-RED integration, rules and dashboard for the Smart Classroom project",
+  "scripts": {
+    "start": "node-red --userDir . --settings settings.js"
+  },
+  "engines": { "node": ">=20.17" },
+  "dependencies": {
+    "node-red": "4.1.17",
+    "@flowfuse/node-red-dashboard": "1.34.0",
+    "node-red-node-sqlite": "2.0.1"
+  }
+}

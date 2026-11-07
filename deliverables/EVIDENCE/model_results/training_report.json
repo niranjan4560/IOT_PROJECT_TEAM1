@@ -1,0 +1,815 @@
+{
+  "run_id": "train-20261027-143655",
+  "dataset": "ROBOD Room 1 (Tekler et al., Building Simulation 15(12), 2022)",
+  "split": {
+    "train_dates": [
+      "2021-09-07",
+      "2021-09-10",
+      "2021-09-13",
+      "2021-09-14",
+      "2021-09-15",
+      "2021-09-16",
+      "2021-09-17",
+      "2021-09-22",
+      "2021-09-23",
+      "2021-09-28",
+      "2021-09-29",
+      "2021-10-01",
+      "2021-12-10",
+      "2021-12-14",
+      "2021-12-16",
+      "2021-12-17",
+      "2021-12-20",
+      "2021-12-21",
+      "2021-12-23"
+    ],
+    "validation_dates": [
+      "2021-09-08",
+      "2021-09-27",
+      "2021-12-09",
+      "2021-12-13"
+    ],
+    "test_dates": [
+      "2021-09-20",
+      "2021-09-21",
+      "2021-09-24",
+      "2021-09-30",
+      "2021-12-15",
+      "2021-12-22"
+    ],
+    "rows": {
+      "train": 5414,
+      "validation": 1119,
+      "test": 1717
+    },
+    "row_rule": "rows with a full 1-hour past window inside one contiguous segment and no missing current sensor"
+  },
+  "features": {
+    "tabular": [
+      "wifi_devices",
+      "co2_ppm",
+      "sound_db",
+      "humidity_pct",
+      "temperature_c",
+      "illuminance_lux",
+      "hour_sin",
+      "hour_cos",
+      "day_of_week",
+      "wifi_mean_30min",
+      "co2_delta_15min",
+      "co2_delta_window",
+      "sound_max_30min",
+      "temp_delta_15min"
+    ],
+    "sequence": [
+      "wifi_devices",
+      "co2_ppm",
+      "sound_db",
+      "humidity_pct",
+      "temperature_c",
+      "illuminance_lux",
+      "hour_sin",
+      "hour_cos",
+      "day_of_week"
+    ],
+    "sequence_length": 12,
+    "energy": [
+      "wifi_devices",
+      "co2_ppm",
+      "temperature_c",
+      "illuminance_lux",
+      "outdoor_temp_c",
+      "setpoint_c",
+      "hour_sin",
+      "hour_cos",
+      "day_of_week",
+      "lighting_kwh",
+      "chilled_water_kwh"
+    ]
+  },
+  "occupancy": {
+    "majority_class": {
+      "category": "baseline",
+      "input": "tabular",
+      "research": "",
+      "validation": {
+        "accuracy": 0.7453,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            834,
+            0
+          ],
+          [
+            285,
+            0
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.7997,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            1373,
+            0
+          ],
+          [
+            344,
+            0
+          ]
+        ]
+      },
+      "compute": {
+        "train_seconds": 0.0,
+        "peak_memory_mb": 0.2,
+        "model_size_kb": 1.1,
+        "median_ms": 0.021,
+        "p95_ms": 0.03
+      },
+      "groupkfold_by_date_f1": {
+        "mean": 0.0,
+        "std": 0.0,
+        "folds": 5
+      },
+      "room2_cross_room": {
+        "accuracy": 0.7127,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            5868,
+            0
+          ],
+          [
+            2366,
+            0
+          ]
+        ]
+      }
+    },
+    "logistic_regression": {
+      "category": "traditional",
+      "input": "tabular",
+      "research": "",
+      "validation": {
+        "accuracy": 0.8525,
+        "f1": 0.7308,
+        "precision": 0.6829,
+        "recall": 0.786,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            730,
+            104
+          ],
+          [
+            61,
+            224
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.8585,
+        "f1": 0.6463,
+        "precision": 0.6472,
+        "recall": 0.6453,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            1252,
+            121
+          ],
+          [
+            122,
+            222
+          ]
+        ]
+      },
+      "compute": {
+        "train_seconds": 0.02,
+        "peak_memory_mb": 2.6,
+        "model_size_kb": 2.3,
+        "median_ms": 0.875,
+        "p95_ms": 1.41
+      },
+      "groupkfold_by_date_f1": {
+        "mean": 0.6581,
+        "std": 0.1524,
+        "folds": 5
+      },
+      "room2_cross_room": {
+        "accuracy": 0.7672,
+        "f1": 0.6788,
+        "precision": 0.5623,
+        "recall": 0.8563,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            4291,
+            1577
+          ],
+          [
+            340,
+            2026
+          ]
+        ]
+      }
+    },
+    "decision_tree": {
+      "category": "traditional",
+      "input": "tabular",
+      "research": "",
+      "validation": {
+        "accuracy": 0.8901,
+        "f1": 0.7602,
+        "precision": 0.8553,
+        "recall": 0.6842,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            801,
+            33
+          ],
+          [
+            90,
+            195
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.8177,
+        "f1": 0.5444,
+        "precision": 0.5452,
+        "recall": 0.5436,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            1217,
+            156
+          ],
+          [
+            157,
+            187
+          ]
+        ]
+      },
+      "compute": {
+        "train_seconds": 0.04,
+        "peak_memory_mb": 0.3,
+        "model_size_kb": 5.7,
+        "median_ms": 0.859,
+        "p95_ms": 1.019
+      },
+      "groupkfold_by_date_f1": {
+        "mean": 0.6178,
+        "std": 0.158,
+        "folds": 5
+      },
+      "room2_cross_room": {
+        "accuracy": 0.8322,
+        "f1": 0.6569,
+        "precision": 0.796,
+        "recall": 0.5592,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            5529,
+            339
+          ],
+          [
+            1043,
+            1323
+          ]
+        ]
+      }
+    },
+    "random_forest": {
+      "category": "ensemble",
+      "input": "tabular",
+      "research": "",
+      "validation": {
+        "accuracy": 0.9303,
+        "f1": 0.8477,
+        "precision": 0.9559,
+        "recall": 0.7614,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            824,
+            10
+          ],
+          [
+            68,
+            217
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.8375,
+        "f1": 0.5592,
+        "precision": 0.6125,
+        "recall": 0.5145,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            1261,
+            112
+          ],
+          [
+            167,
+            177
+          ]
+        ]
+      },
+      "compute": {
+        "train_seconds": 1.03,
+        "peak_memory_mb": 5.2,
+        "model_size_kb": 4235.3,
+        "median_ms": 10.093,
+        "p95_ms": 14.533
+      },
+      "groupkfold_by_date_f1": {
+        "mean": 0.7332,
+        "std": 0.1117,
+        "folds": 5
+      },
+      "room2_cross_room": {
+        "accuracy": 0.8462,
+        "f1": 0.6674,
+        "precision": 0.8819,
+        "recall": 0.5368,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            5698,
+            170
+          ],
+          [
+            1096,
+            1270
+          ]
+        ]
+      }
+    },
+    "gradient_boosting": {
+      "category": "ensemble",
+      "input": "tabular",
+      "research": "",
+      "validation": {
+        "accuracy": 0.9169,
+        "f1": 0.8194,
+        "precision": 0.9174,
+        "recall": 0.7404,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            815,
+            19
+          ],
+          [
+            74,
+            211
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.8462,
+        "f1": 0.5556,
+        "precision": 0.66,
+        "recall": 0.4797,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            1288,
+            85
+          ],
+          [
+            179,
+            165
+          ]
+        ]
+      },
+      "compute": {
+        "train_seconds": 0.68,
+        "peak_memory_mb": 0.7,
+        "model_size_kb": 728.8,
+        "median_ms": 2.525,
+        "p95_ms": 3.559
+      },
+      "groupkfold_by_date_f1": {
+        "mean": 0.6829,
+        "std": 0.1527,
+        "folds": 5
+      },
+      "room2_cross_room": {
+        "accuracy": 0.8318,
+        "f1": 0.6352,
+        "precision": 0.8428,
+        "recall": 0.5097,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            5643,
+            225
+          ],
+          [
+            1160,
+            1206
+          ]
+        ]
+      }
+    },
+    "lstm": {
+      "category": "deep_learning",
+      "input": "sequence",
+      "research": "B: Hou et al. 2025 (LSTM occupancy estimator)",
+      "validation": {
+        "accuracy": 0.8525,
+        "f1": 0.714,
+        "precision": 0.7055,
+        "recall": 0.7228,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            748,
+            86
+          ],
+          [
+            79,
+            206
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.8719,
+        "f1": 0.5926,
+        "precision": 0.8163,
+        "recall": 0.4651,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            1337,
+            36
+          ],
+          [
+            184,
+            160
+          ]
+        ]
+      },
+      "compute": {
+        "train_seconds": 4.85,
+        "peak_memory_mb": 183.2,
+        "model_size_kb": 25.7,
+        "median_ms": 0.397,
+        "p95_ms": 0.541,
+        "parameters": 5537,
+        "best_epoch": 13
+      },
+      "groupkfold_by_date_f1": {
+        "mean": 0.6146,
+        "std": 0.142,
+        "folds": 5
+      },
+      "room2_cross_room": {
+        "accuracy": 0.8197,
+        "f1": 0.6365,
+        "precision": 0.7563,
+        "recall": 0.5495,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            5449,
+            419
+          ],
+          [
+            1066,
+            1300
+          ]
+        ]
+      }
+    },
+    "mamba": {
+      "category": "deep_learning",
+      "input": "sequence",
+      "research": "A: OCC-Mamba family (Mamba selective SSM)",
+      "validation": {
+        "accuracy": 0.8695,
+        "f1": 0.7575,
+        "precision": 0.7192,
+        "recall": 0.8,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            745,
+            89
+          ],
+          [
+            57,
+            228
+          ]
+        ]
+      },
+      "test": {
+        "accuracy": 0.8841,
+        "f1": 0.6515,
+        "precision": 0.8194,
+        "recall": 0.5407,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            1332,
+            41
+          ],
+          [
+            158,
+            186
+          ]
+        ]
+      },
+      "compute": {
+        "train_seconds": 24.86,
+        "peak_memory_mb": 163.3,
+        "model_size_kb": 77.0,
+        "median_ms": 2.215,
+        "p95_ms": 2.954,
+        "parameters": 17217,
+        "best_epoch": 2
+      },
+      "groupkfold_by_date_f1": {
+        "mean": 0.6657,
+        "std": 0.12,
+        "folds": 5
+      },
+      "room2_cross_room": {
+        "accuracy": 0.8164,
+        "f1": 0.5702,
+        "precision": 0.8707,
+        "recall": 0.4239,
+        "confusion_matrix_[[TN,FP],[FN,TP]]": [
+          [
+            5719,
+            149
+          ],
+          [
+            1363,
+            1003
+          ]
+        ]
+      }
+    }
+  },
+  "energy": {
+    "mean_baseline": {
+      "category": "baseline",
+      "next_lighting_kwh": {
+        "mae": 0.05393,
+        "rmse": 0.06859,
+        "r2": -0.0008
+      },
+      "next_chilled_water_kwh": {
+        "mae": 0.66878,
+        "rmse": 0.83743,
+        "r2": -0.0179
+      }
+    },
+    "persistence_baseline": {
+      "category": "baseline",
+      "next_lighting_kwh": {
+        "mae": 0.00223,
+        "rmse": 0.01278,
+        "r2": 0.9652
+      },
+      "next_chilled_water_kwh": {
+        "mae": 0.45009,
+        "rmse": 0.86684,
+        "r2": -0.0906
+      }
+    },
+    "linear_regression": {
+      "category": "traditional",
+      "next_lighting_kwh": {
+        "mae": 0.00284,
+        "rmse": 0.01266,
+        "r2": 0.9659
+      },
+      "next_chilled_water_kwh": {
+        "mae": 0.46633,
+        "rmse": 0.68622,
+        "r2": 0.3165
+      },
+      "compute": {
+        "train_seconds": 0.0,
+        "peak_memory_mb": 3.2,
+        "median_ms": 0.527,
+        "p95_ms": 0.649
+      }
+    },
+    "random_forest": {
+      "category": "ensemble",
+      "next_lighting_kwh": {
+        "mae": 0.01443,
+        "rmse": 0.02775,
+        "r2": 0.8361
+      },
+      "next_chilled_water_kwh": {
+        "mae": 0.2442,
+        "rmse": 0.48478,
+        "r2": 0.6589
+      },
+      "compute": {
+        "train_seconds": 4.56,
+        "peak_memory_mb": 0.2,
+        "median_ms": 13.285,
+        "p95_ms": 19.138
+      }
+    },
+    "gradient_boosting": {
+      "category": "ensemble",
+      "next_lighting_kwh": {
+        "mae": 0.00404,
+        "rmse": 0.01269,
+        "r2": 0.9657
+      },
+      "next_chilled_water_kwh": {
+        "mae": 0.24288,
+        "rmse": 0.45427,
+        "r2": 0.7005
+      },
+      "compute": {
+        "train_seconds": 1.28,
+        "peak_memory_mb": 0.2,
+        "median_ms": 5.995,
+        "p95_ms": 9.087
+      }
+    },
+    "units": "kWh per 5-minute interval; lighting is electrical, chilled water is THERMAL"
+  },
+  "primary_occupancy_model": {
+    "name": "random_forest",
+    "rule": "highest validation F1 (test dates not used)"
+  },
+  "arrival_profile": {
+    "threshold_selection": {
+      "inner_cv_f1_by_threshold": {
+        "0.2": 0.1449,
+        "0.3": 0.0739,
+        "0.4": 0.0354,
+        "0.5": 0.031
+      },
+      "chosen_threshold": 0.2
+    },
+    "test": {
+      "accuracy": 0.8531,
+      "f1": 0.066,
+      "precision": 0.0424,
+      "recall": 0.1489,
+      "confusion_matrix_[[TN,FP],[FN,TP]]": [
+        [
+          1143,
+          158
+        ],
+        [
+          40,
+          7
+        ]
+      ]
+    },
+    "test_empty_rows": 1348,
+    "test_arrivals": 47
+  },
+  "dqn": {
+    "research": "B: Hou et al. 2025 (Dueling DQN HVAC control)",
+    "train_seconds": 218.6,
+    "episodes": 400,
+    "model_size_kb": 23.9,
+    "median_ms": 0.117,
+    "p95_ms": 0.195,
+    "training_log": [
+      {
+        "episode": 0,
+        "epsilon": 1.0,
+        "return": -40.16
+      },
+      {
+        "episode": 20,
+        "epsilon": 0.932,
+        "return": -40.52
+      },
+      {
+        "episode": 40,
+        "epsilon": 0.864,
+        "return": -33.24
+      },
+      {
+        "episode": 60,
+        "epsilon": 0.796,
+        "return": -30.42
+      },
+      {
+        "episode": 80,
+        "epsilon": 0.729,
+        "return": -31.72
+      },
+      {
+        "episode": 100,
+        "epsilon": 0.661,
+        "return": -30.53
+      },
+      {
+        "episode": 120,
+        "epsilon": 0.593,
+        "return": -25.82
+      },
+      {
+        "episode": 140,
+        "epsilon": 0.525,
+        "return": -24.09
+      },
+      {
+        "episode": 160,
+        "epsilon": 0.457,
+        "return": -21.23
+      },
+      {
+        "episode": 180,
+        "epsilon": 0.389,
+        "return": -19.24
+      },
+      {
+        "episode": 200,
+        "epsilon": 0.321,
+        "return": -18.15
+      },
+      {
+        "episode": 220,
+        "epsilon": 0.254,
+        "return": -13.76
+      },
+      {
+        "episode": 240,
+        "epsilon": 0.186,
+        "return": -24.44
+      },
+      {
+        "episode": 260,
+        "epsilon": 0.118,
+        "return": -15.54
+      },
+      {
+        "episode": 280,
+        "epsilon": 0.05,
+        "return": -12.38
+      },
+      {
+        "episode": 300,
+        "epsilon": 0.05,
+        "return": -4.99
+      },
+      {
+        "episode": 320,
+        "epsilon": 0.05,
+        "return": -17.58
+      },
+      {
+        "episode": 340,
+        "epsilon": 0.05,
+        "return": -4.83
+      },
+      {
+        "episode": 360,
+        "epsilon": 0.05,
+        "return": -6.91
+      },
+      {
+        "episode": 380,
+        "epsilon": 0.05,
+        "return": -4.78
+      },
+      {
+        "episode": 399,
+        "epsilon": 0.05,
+        "return": -7.63
+      }
+    ],
+    "simulator": {
+      "room": {
+        "dt_s": 300.0,
+        "capacitance_j_per_k": 8000000.0,
+        "ua_w_per_k": 200.0,
+        "q_person_w": 75.0,
+        "solar_aperture_m2": 0.5,
+        "q_light_w": 800.0,
+        "cooling_max_w": 15000.0,
+        "outdoor_air_load_w": 4500.0,
+        "setpoints_c": [
+          26.0,
+          24.0,
+          23.0
+        ],
+        "volume_m3": 500.0,
+        "co2_per_person_m3_s": 5.2e-06,
+        "vent_fan_m3_s": 0.5,
+        "vent_infiltration_m3_s": 0.05,
+        "fan_kwh_per_step": 0.0217,
+        "comfort_low_c": 23.0,
+        "comfort_high_c": 26.0,
+        "co2_limit_ppm": 1000.0
+      },
+      "reward": {
+        "cop": 3.5,
+        "comfort_per_k": 0.5,
+        "co2_per_100ppm": 0.3
+      }
+    }
+  }
+}

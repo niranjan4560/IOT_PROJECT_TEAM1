@@ -1,0 +1,9 @@
+$ SC_E2E=1 .venv/bin/python -m pytest -v tests/test_e2e_loopback.py
+============================= test session starts ==============================
+platform linux -- Python 3.13.17, pytest-8.4.2, pluggy-1.7.0 -- $S/v4/.venv/bin/python
+rootdir: $S/v4
+collecting ... collected 1 item
+
+tests/test_e2e_loopback.py::test_full_loop PASSED                        [100%]
+
+============================== 1 passed in 19.32s ==============================

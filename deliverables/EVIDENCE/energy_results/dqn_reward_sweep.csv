@@ -1,0 +1,4 @@
+run_at,w_cop,w_comfort_per_k,w_co2_per_100ppm,episodes,occupancy_input,train_seconds,test_cooling_kwh_thermal,test_comfort_violation_pct,test_comfort_violation_kelvin_hours,test_ac_switches_per_day,model_file
+2026-11-04T15:42:52,3.5,0.5,0.3,150,camera label (oracle),79.7,115.7,26.5,1.3,30.8,models/experiments/dqn_comfort_0.5.pt
+2026-11-04T15:44:13,3.5,2.0,0.3,150,camera label (oracle),76.1,121.6,1.7,0.43,24.5,models/experiments/dqn_comfort_2.pt
+2026-11-04T16:09:59,3.5,0.5,0.3,150,camera label (oracle),90.6,115.7,26.5,1.3,30.8,models/experiments/dqn_comfort_0.5.pt

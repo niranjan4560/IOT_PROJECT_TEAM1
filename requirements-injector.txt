@@ -1,0 +1,3 @@
+# Optional: the Streamlit sensor-injector panel (sensor_injector.py), on either laptop.
+-r requirements-node.txt
+streamlit==1.44.1

@@ -1,0 +1,29 @@
+PASS  Python >= 3.10                            
+PASS  import numpy                              
+PASS  import pandas                             
+PASS  import paho.mqtt.client                   
+PASS  import sklearn                            
+PASS  import torch                              
+PASS  import joblib                             
+PASS  import psutil                             
+PASS  .env present                              
+PASS  server credentials in .env                
+PASS  server password is not a placeholder      
+PASS  data/combined_Room1.csv                   
+PASS  data/combined_Room2.csv                   
+PASS  models/final/manifest.json                
+PASS  models/dqn_controller.pt                  
+PASS  Node.js on PATH                           
+PASS  Node-RED installed                        
+PASS  sqlite3 native module                     
+PASS  Node-RED editor password set              
+PASS  dataset SHA-256 matches registered files  
+PASS  broker password file                      
+21 passed, 0 failed
+Server running. Dashboard: http://localhost:1880/dashboard  Editor: http://localhost:1880  (logs in logs/)
+Laptop 1 LAN IP: 192.0.2.2
+  On Laptop 2 run: python tools/init_env.py --role node --host 192.0.2.2   (or setup_node.ps1 -ServerIp 192.0.2.2)
+  Dashboard from any laptop on this Wi-Fi: http://192.0.2.2:1880/dashboard
+Press Ctrl+C to stop the server.
+
+Stopping...

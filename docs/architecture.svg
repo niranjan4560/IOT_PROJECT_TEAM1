@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 640" width="1600" height="640" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+    <style>
+      .box { fill: #ffffff; stroke: #1f2937; stroke-width: 2; }
+      .lap1 { fill: #eef4fb; stroke: #2a78d6; stroke-width: 1.5; stroke-dasharray: 6 4; }
+      .lap2 { fill: #fdf1ea; stroke: #eb6834; stroke-width: 1.5; stroke-dasharray: 6 4; }
+      .sub { fill: #f8fafc; stroke: #64748b; stroke-width: 1.2; }
+      .t { font-size: 17px; font-weight: 700; fill: #111827; text-anchor: middle; }
+      .s { font-size: 12.5px; fill: #374151; text-anchor: middle; }
+      .xs { font-size: 11px; fill: #4b5563; }
+      .tag { font-size: 12px; font-weight: 700; }
+      .num { fill: #ffffff; stroke: #1f2937; stroke-width: 2; }
+      .n { font-size: 15px; font-weight: 700; text-anchor: middle; fill: #111827; }
+      .line { stroke: #1f2937; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .lbl { font-size: 12.5px; fill: #111827; text-anchor: middle; }
+    </style>
+  </defs>
+  <rect width="1600" height="640" fill="#ffffff"/>
+  <text x="800" y="30" class="t" style="font-size:20px">Smart Classroom Energy Management — implemented reference architecture (stages 1–8)</text>
+
+  <!-- laptop zones -->
+  <rect x="20" y="50" width="205" height="420" rx="10" class="lap2"/>
+  <text x="32" y="70" class="tag" fill="#b4441b">LAPTOP 2 · IoT NODE</text>
+  <rect x="240" y="50" width="1340" height="420" rx="10" class="lap1"/>
+  <text x="252" y="70" class="tag" fill="#1d5fae">LAPTOP 1 · SERVER</text>
+
+  <!-- 1 IoT devices -->
+  <rect x="35" y="150" width="175" height="200" rx="6" class="box"/>
+  <text x="122" y="178" class="t">IoT Devices</text>
+  <text x="122" y="198" class="s">(sensor replay +</text>
+  <text x="122" y="214" class="s">simulated actuators)</text>
+  <text x="45" y="244" class="xs">run_simulator.py</text>
+  <text x="45" y="259" class="xs">  ROBOD rows → telemetry [M]</text>
+  <text x="45" y="282" class="xs">actuator.py</text>
+  <text x="45" y="297" class="xs">  light device [S]</text>
+  <text x="45" y="312" class="xs">  AC device [S] + ack</text>
+  <text x="45" y="335" class="xs">loop latency (node clock)</text>
+
+  <!-- 2 MQTT broker -->
+  <rect x="270" y="170" width="150" height="160" rx="6" class="box"/>
+  <text x="345" y="200" class="t">MQTT Broker</text>
+  <text x="345" y="222" class="s">Mosquitto 2.x</text>
+  <text x="345" y="248" class="s">password + ACL</text>
+  <text x="345" y="266" class="s">QoS 1, retained</text>
+  <text x="345" y="284" class="s">commands/acks,</text>
+  <text x="345" y="302" class="s">Last Will status</text>
+
+  <!-- 3 Node-RED -->
+  <rect x="465" y="170" width="170" height="160" rx="6" class="box"/>
+  <text x="550" y="200" class="t">Node-RED</text>
+  <text x="550" y="220" class="s">(flow processing)</text>
+  <text x="550" y="246" class="s">JSON parse · validate</text>
+  <text x="550" y="264" class="s">ranges · duplicates</text>
+  <text x="550" y="282" class="s">stale-data watchdog</text>
+  <text x="550" y="300" class="s">alerts · health</text>
+
+  <!-- 4 Dashboard + DB -->
+  <rect x="690" y="88" width="190" height="120" rx="6" class="box"/>
+  <text x="785" y="116" class="t">Dashboard</text>
+  <text x="785" y="136" class="s">Node-RED Dashboard 2.0</text>
+  <text x="785" y="156" class="s">sensors · predictions ·</text>
+  <text x="785" y="173" class="s">commands · acks · energy ·</text>
+  <text x="785" y="190" class="s">alerts · override · health</text>
+  <rect x="690" y="290" width="190" height="120" rx="6" class="box"/>
+  <text x="785" y="318" class="t">Database</text>
+  <text x="785" y="338" class="s">SQLite (db/schema.sql)</text>
+  <text x="785" y="358" class="s">telemetry · predictions ·</text>
+  <text x="785" y="375" class="s">decisions · commands · acks ·</text>
+  <text x="785" y="392" class="s">alerts · metrics · experiments</text>
+
+  <!-- 5 Analytics & ML -->
+  <rect x="935" y="80" width="400" height="370" rx="6" class="box"/>
+  <text x="1135" y="106" class="t">Analytics &amp; ML  (ml_service.py)</text>
+  <rect x="948" y="120" width="118" height="92" rx="4" class="sub"/>
+  <text x="1007" y="140" class="s" style="font-weight:700">Traditional ML</text>
+  <text x="1007" y="160" class="s">logistic regr.</text>
+  <text x="1007" y="176" class="s">decision tree</text>
+  <text x="1007" y="192" class="s">linear regr.</text>
+  <rect x="1076" y="120" width="118" height="92" rx="4" class="sub"/>
+  <text x="1135" y="140" class="s" style="font-weight:700">Ensemble ML</text>
+  <text x="1135" y="160" class="s">random forest</text>
+  <text x="1135" y="176" class="s">hist. gradient</text>
+  <text x="1135" y="192" class="s">boosting</text>
+  <rect x="1204" y="120" width="118" height="92" rx="4" class="sub"/>
+  <text x="1263" y="140" class="s" style="font-weight:700">Deep Learning</text>
+  <text x="1263" y="160" class="s">LSTM  [paper B]</text>
+  <text x="1263" y="176" class="s">Mamba SSM [A]</text>
+  <text x="1263" y="192" class="s">Dueling DQN [B]</text>
+  <rect x="948" y="226" width="374" height="210" rx="4" class="sub" style="stroke-dasharray:5 3"/>
+  <text x="1135" y="246" class="s" style="font-weight:700">Performance evaluation</text>
+  <text x="958" y="270" class="xs" style="font-weight:700">ML performance</text>
+  <text x="958" y="288" class="xs">accuracy, precision,</text>
+  <text x="958" y="304" class="xs">recall, F1, confusion</text>
+  <text x="958" y="320" class="xs">matrix; MAE, RMSE, R²</text>
+  <text x="958" y="336" class="xs">vs majority / mean /</text>
+  <text x="958" y="352" class="xs">persistence baselines</text>
+  <text x="1082" y="270" class="xs" style="font-weight:700">Computational</text>
+  <text x="1082" y="288" class="xs">training time</text>
+  <text x="1082" y="304" class="xs">inference latency</text>
+  <text x="1082" y="320" class="xs">peak memory</text>
+  <text x="1082" y="336" class="xs">model size, params</text>
+  <text x="1082" y="352" class="xs">CPU only</text>
+  <text x="1200" y="270" class="xs" style="font-weight:700">Closed-loop</text>
+  <text x="1200" y="288" class="xs">loop latency, ack rate</text>
+  <text x="1200" y="304" class="xs">switching per day</text>
+  <text x="1200" y="320" class="xs">energy per load</text>
+  <text x="1200" y="336" class="xs">comfort violations</text>
+  <text x="1200" y="352" class="xs">baseline vs controlled</text>
+  <text x="958" y="384" class="xs">[A] Qaisar et al., OCC-Mamba, BAE art. 114085 (adapted)</text>
+  <text x="958" y="402" class="xs">[B] Hou et al., BAE 284 (2025) 113501 — LSTM + Dueling DQN</text>
+  <text x="958" y="422" class="xs">[M] measured · [D] derived · [P] predicted · [S] simulated</text>
+
+  <!-- 6 Decision engine -->
+  <rect x="1385" y="150" width="180" height="200" rx="6" class="box"/>
+  <text x="1475" y="178" class="t">Decision Engine</text>
+  <text x="1475" y="198" class="s">(Node-RED)</text>
+  <text x="1475" y="224" class="s">rules or Dueling-DQN AC</text>
+  <text x="1475" y="242" class="s">+ safety layer:</text>
+  <text x="1475" y="260" class="s">hysteresis, min hold,</text>
+  <text x="1475" y="278" class="s">comfort guard, override,</text>
+  <text x="1475" y="296" class="s">missing-model fallback</text>
+  <text x="1475" y="322" class="s">change-only gate</text>
+
+  <!-- arrows 1-5 -->
+  <path class="line" d="M210,250 L268,250"/>
+  <path class="line" d="M420,250 L463,250"/>
+  <path class="line" d="M635,250 L660,250 L660,148 L688,148"/>
+  <path class="line" d="M660,250 L660,350 L688,350"/>
+  <path class="line" d="M880,350 L933,350"/>
+  <path class="line" d="M1335,250 L1383,250"/>
+  <circle cx="239" cy="250" r="14" class="num"/><text x="239" y="255" class="n">1</text>
+  <circle cx="442" cy="250" r="14" class="num"/><text x="442" y="255" class="n">2</text>
+  <circle cx="660" cy="200" r="14" class="num"/><text x="660" y="205" class="n">3</text>
+  <circle cx="907" cy="350" r="14" class="num"/><text x="907" y="355" class="n">4</text>
+  <circle cx="1360" cy="250" r="14" class="num"/><text x="1360" y="255" class="n">5</text>
+  <circle cx="1475" cy="372" r="14" class="num"/><text x="1475" y="377" class="n">6</text>
+
+  <!-- 7: decision engine -> broker -->
+  <path class="line" d="M1475,386 L1475,560 L345,560 L345,332"/>
+  <circle cx="900" cy="560" r="14" class="num"/><text x="900" y="565" class="n">7</text>
+  <text x="900" y="592" class="lbl">control commands via MQTT: smartclass/{room}/control/light|ac  (command_id, reason, QoS 1, retained)</text>
+  <!-- 8: broker -> actuators, and ack back -->
+  <path class="line" d="M300,332 L300,500 L122,500 L122,352"/>
+  <circle cx="211" cy="500" r="14" class="num"/><text x="211" y="505" class="n">8</text>
+  <text x="250" y="530" class="lbl">command to actuators</text>
+  <path class="line" d="M160,352 L160,470 L280,470 L280,334" style="stroke:#6b7280;stroke-dasharray:5 4"/>
+  <text x="170" y="488" class="xs">ack</text>
+
+  <!-- dataset -->
+  <rect x="30" y="580" width="200" height="48" rx="4" fill="#ffffff" stroke="#1f2937" stroke-dasharray="6 4"/>
+  <text x="130" y="600" class="s" style="font-weight:700">Real-world dataset</text>
+  <text x="130" y="617" class="s">ROBOD Room 1 + Room 2</text>
+  <path class="line" d="M122,580 L122,352" style="stroke-dasharray:5 4"/>
+  <text x="800" y="630" class="xs" text-anchor="middle">Laptop 1 = server (broker, Node-RED, SQLite, ML service, decision engine, dashboard); Laptop 2 = IoT node (replay, light + AC actuators). Loopback mode runs both on one laptop.</text>
+</svg>

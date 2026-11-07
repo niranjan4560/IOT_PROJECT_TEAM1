@@ -1,0 +1,2857 @@
+[
+  {
+    "id": "tab_smartclass",
+    "type": "tab",
+    "label": "Smart Classroom",
+    "disabled": false,
+    "info": "Team 1 - Smart Classroom Energy Management (Laptop 1 / server).\n\nReference architecture stages:\n(1) IoT node -> (2) MQTT broker -> (3) this flow: validate -> (4) SQLite + Dashboard 2.0 -> (5) ML service (Python, via MQTT) -> (6) Decision engine (this flow) -> (7) MQTT control -> (8) actuator node acknowledges.\n\nAll thresholds are in the CONFIG node. Broker credentials come from the environment variables SC_SERVER_USERNAME / SC_SERVER_PASSWORD (loaded from ../.env by settings.js)."
+  },
+  {
+    "id": "sc_broker",
+    "type": "mqtt-broker",
+    "name": "Mosquitto (server)",
+    "broker": "${SC_NODERED_MQTT_HOST}",
+    "port": "${SC_MQTT_PORT}",
+    "clientid": "smartclass-nodered",
+    "autoConnect": true,
+    "usetls": false,
+    "protocolVersion": "4",
+    "keepalive": "30",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "smartclass/nodered/status",
+    "birthQos": "1",
+    "birthRetain": "true",
+    "birthPayload": "online",
+    "birthMsg": {},
+    "closeTopic": "smartclass/nodered/status",
+    "closeQos": "1",
+    "closeRetain": "true",
+    "closePayload": "offline",
+    "closeMsg": {},
+    "willTopic": "smartclass/nodered/status",
+    "willQos": "1",
+    "willRetain": "true",
+    "willPayload": "offline",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "sc_db",
+    "type": "sqlitedb",
+    "db": "${SC_DB_PATH}",
+    "mode": "RWC"
+  },
+  {
+    "id": "sc_ui_base",
+    "type": "ui-base",
+    "name": "Smart Classroom",
+    "path": "/dashboard",
+    "appIcon": "",
+    "includeClientData": true,
+    "acceptsClientConfig": [
+      "ui-notification",
+      "ui-control"
+    ],
+    "showPathInSidebar": false,
+    "headerContent": "page",
+    "navigationStyle": "none",
+    "titleBarStyle": "default",
+    "showReconnectNotification": true,
+    "notificationDisplayTime": 1,
+    "showDisconnectNotification": true,
+    "allowInstall": false
+  },
+  {
+    "id": "sc_theme",
+    "type": "ui-theme",
+    "name": "Classroom theme",
+    "colors": {
+      "surface": "#1f4e79",
+      "primary": "#1f6feb",
+      "bgPage": "#f4f6f8",
+      "groupBg": "#ffffff",
+      "groupOutline": "#d9d9e0"
+    },
+    "sizes": {
+      "density": "default",
+      "pagePadding": "12px",
+      "groupGap": "12px",
+      "groupBorderRadius": "6px",
+      "widgetGap": "8px"
+    }
+  },
+  {
+    "id": "sc_page",
+    "type": "ui-page",
+    "name": "Classroom",
+    "ui": "sc_ui_base",
+    "path": "/classroom",
+    "icon": "school",
+    "layout": "grid",
+    "theme": "sc_theme",
+    "breakpoints": [
+      {
+        "name": "Default",
+        "px": "0",
+        "cols": "3"
+      },
+      {
+        "name": "Tablet",
+        "px": "576",
+        "cols": "6"
+      },
+      {
+        "name": "Small Desktop",
+        "px": "768",
+        "cols": "9"
+      },
+      {
+        "name": "Desktop",
+        "px": "1024",
+        "cols": "12"
+      }
+    ],
+    "order": 1,
+    "className": "",
+    "visible": "true",
+    "disabled": "false"
+  },
+  {
+    "id": "sc_g_control",
+    "type": "ui-group",
+    "name": "Room selector · manual override · demo reset",
+    "page": "sc_page",
+    "width": "4",
+    "height": "1",
+    "order": 1,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_state",
+    "type": "ui-group",
+    "name": "Stage 6 · decision  [P] predicted · [S] simulated",
+    "page": "sc_page",
+    "width": "4",
+    "height": "1",
+    "order": 2,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_sensors",
+    "type": "ui-group",
+    "name": "Stage 1 · latest reading [M] (ROBOD)",
+    "page": "sc_page",
+    "width": "4",
+    "height": "1",
+    "order": 3,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_health",
+    "type": "ui-group",
+    "name": "System health (live, since Node-RED start or Reset)",
+    "page": "sc_page",
+    "width": "12",
+    "height": "1",
+    "order": 4,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_models",
+    "type": "ui-group",
+    "name": "Stage 5 · live predictions [P] (probabilities)",
+    "page": "sc_page",
+    "width": "6",
+    "height": "1",
+    "order": 5,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_compare",
+    "type": "ui-group",
+    "name": "Stage 5 · model performance (SQLite)",
+    "page": "sc_page",
+    "width": "6",
+    "height": "1",
+    "order": 6,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_occ",
+    "type": "ui-group",
+    "name": "Occupancy over time: predicted probability [P] vs camera label [M] (0–1)",
+    "page": "sc_page",
+    "width": "12",
+    "height": "1",
+    "order": 7,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_energy",
+    "type": "ui-group",
+    "name": "Recorded energy per 5-minute reading [M] (x axis = replay wall-clock time)",
+    "page": "sc_page",
+    "width": "12",
+    "height": "1",
+    "order": 8,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_savings",
+    "type": "ui-group",
+    "name": "Baseline [M] vs controlled [S] cumulative energy — simulated counterfactual, not measured savings",
+    "page": "sc_page",
+    "width": "12",
+    "height": "1",
+    "order": 9,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_offline",
+    "type": "ui-group",
+    "name": "Offline evaluation · registered experiments, Room 1, 6 held-out test dates (SQLite experiment_results)",
+    "page": "sc_page",
+    "width": "12",
+    "height": "1",
+    "order": 10,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_comfort",
+    "type": "ui-group",
+    "name": "Comfort proxies (live): camera label [M] vs our commands [S]",
+    "page": "sc_page",
+    "width": "12",
+    "height": "1",
+    "order": 11,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_latency",
+    "type": "ui-group",
+    "name": "End-to-end response time per command (ms, live)",
+    "page": "sc_page",
+    "width": "12",
+    "height": "1",
+    "order": 12,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_g_alerts",
+    "type": "ui-group",
+    "name": "Alerts (latest 20)",
+    "page": "sc_page",
+    "width": "12",
+    "height": "1",
+    "order": 13,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "sc_c0",
+    "type": "comment",
+    "z": "tab_smartclass",
+    "name": "0. CONFIG and database set-up (schema = db/schema.sql)",
+    "info": "Edit thresholds in the CONFIG node, then Deploy.",
+    "x": 220,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "sc_config",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "CONFIG (all thresholds)",
+    "func": "return msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "// ===== ALL THRESHOLDS LIVE HERE. Edit, then Deploy. =====\n// Every other function node reads these values with global.get('cfg').\nglobal.set('cfg', {\n    allowed_rooms: ['room1', 'room2'],\n\n    // Stage 6 - which controller chooses the AC mode:\n    //   'rules' = transparent rules below;  'dqn' = Dueling-DQN recommendation from the ML service\n    //   (research algorithm B), always passed through the same safety layer (override, comfort guard,\n    //   minimum hold time, stale-data hold). Lights are always rule-based.\n    ac_controller: 'rules',\n    dqn_comfort_guard_c: 2.0,   // occupied and hotter than comfort + 2 C -> at least COMFORT, whatever the DQN says\n\n    // (e) Daylight dimming per room. Room 1's sensor never exceeds ~92 lux in the whole dataset, so dimming is\n    // switched OFF there (null). 300 lux is the EN 12464-1 classroom task level; Room 2 reaches ~2,015 lux.\n    rooms: {\n        room1: { lux_dim_threshold: null },\n        room2: { lux_dim_threshold: 300 },\n    },\n\n    // Occupancy hysteresis (c): become OCCUPIED at p >= on, become EMPTY only at p < off.\n    // Chosen on the VALIDATION dates (results/threshold_tuning_validation.csv): the most comfort-protective pair whose\n    // lighting saving stays >= 30%. 0.6/0.4 switched lights off in 22.5% of occupied validation intervals; 0.25/0.15: 13.7%.\n    occupancy_on_above: 0.25,\n    occupancy_off_below: 0.15,\n\n    // Unoccupied behaviour\n    light_off_after_min: 15,      // grace period before lights go OFF and AC goes to ECO\n    ac_off_after_min: 30,         // (b) AC fully OFF after 30 min empty (if no arrival expected)\n\n    // Pre-cooling (a): arrival profile from train_models.py; threshold chosen by cross-validation on training dates.\n    precool_probability: 0.2,\n    precool_only_if_above_comfort_c: 0.5,\n\n    // Comfort (the recorded BMS setpoint reaches 31 C at night, so the rules use their own comfort setpoint)\n    comfort_setpoint_c: 24.0,\n    boost_above_comfort_c: 1.5,\n\n    // (c) Minimum time between switching a load down (or up while empty), in DATA minutes.\n    min_hold_min: 10,\n\n    // (d) Start fresh if data time jumps backwards or by more than this (new replay / day gap).\n    reset_gap_min: 60,\n\n    // Missing-model safeguard: if the ML service sends no occupancy probability, keep the last commands; with no\n    // history, use this timetable (lights ON + COMFORT inside it, OFF + ECO outside it).\n    fallback_schedule: { start_hour: 8, end_hour: 20 },\n\n    // (f) Stale telemetry: alert if no valid reading for this many REAL seconds.\n    stale_after_s: 15,\n    // Command delivery: alert NO_ACK if the actuator has not acknowledged within this many REAL seconds.\n    ack_timeout_s: 5,\n\n    // Energy accounting used by the dashboard savings chart (same values as savings_experiment.py)\n    dim_factor: 0.5,\n    eco_factor: 0.75,\n\n    // Validation ranges: [min, max, required]\n    ranges: {\n        wifi_devices: [0, 500, true],\n        co2_ppm: [300, 5000, true],\n        sound_db: [20, 120, true],\n        humidity_pct: [0, 100, true],\n        temperature_c: [10, 45, true],\n        illuminance_lux: [0, 10000, true],\n        setpoint_c: [15, 32, true],\n        outdoor_temp_c: [10, 45, false],\n        lighting_kwh: [0, 5, false],\n        fcu_fan_kwh: [0, 5, false],\n        plug_kwh: [0, 10, false],\n        chilled_water_kwh: [0, 20, false],\n        occupant_presence: [0, 1, false],\n        occupant_count: [0, 500, false],\n        sent_at_ms: [0, 1e14, false],\n    },\n});\nnode.status({ fill: 'green', shape: 'dot', text: 'config loaded' });\n",
+    "finalize": "",
+    "libs": [],
+    "x": 200,
+    "y": 80,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_i_dbinit",
+    "type": "inject",
+    "z": "tab_smartclass",
+    "name": "on start",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 140,
+    "y": 140,
+    "wires": [
+      [
+        "sc_dbinit"
+      ]
+    ]
+  },
+  {
+    "id": "sc_dbinit",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "SQL: create tables",
+    "func": "// Generated from db/schema.sql - edit that file, not this node.\nconst sql = [\n \"CREATE TABLE IF NOT EXISTS telemetry ( id INTEGER PRIMARY KEY AUTOINCREMENT, room_id TEXT NOT NULL, ts TEXT NOT NULL, source TEXT, sent_at_ms INTEGER, wifi_devices REAL, co2_ppm REAL, sound_db REAL, humidity_pct REAL, temperature_c REAL, illuminance_lux REAL, setpoint_c REAL, outdoor_temp_c REAL, lighting_kwh REAL, fcu_fan_kwh REAL, plug_kwh REAL, chilled_water_kwh_thermal REAL, occupant_presence INTEGER, occupant_count REAL, received_at TEXT NOT NULL, UNIQUE(room_id, ts) )\",\n \"CREATE TABLE IF NOT EXISTS predictions ( id INTEGER PRIMARY KEY AUTOINCREMENT, room_id TEXT NOT NULL, ts TEXT NOT NULL, model TEXT NOT NULL, category TEXT, probability REAL, latency_ms REAL, UNIQUE(room_id, ts, model) )\",\n \"CREATE TABLE IF NOT EXISTS decisions ( id INTEGER PRIMARY KEY AUTOINCREMENT, room_id TEXT NOT NULL, ts TEXT NOT NULL, primary_model TEXT, occupancy_probability REAL, occupied INTEGER, p_arrival_30min REAL, predicted_next_lighting_kwh REAL, predicted_next_chilled_water_kwh_thermal REAL, ac_controller TEXT, dqn_ac_action TEXT, light_cmd TEXT NOT NULL, ac_cmd TEXT NOT NULL, reason TEXT NOT NULL, UNIQUE(room_id, ts) )\",\n \"CREATE TABLE IF NOT EXISTS commands ( command_id TEXT PRIMARY KEY, room_id TEXT NOT NULL, load TEXT NOT NULL, cmd TEXT NOT NULL, reason TEXT, data_ts TEXT, sent_at TEXT NOT NULL, sent_at_ms INTEGER NOT NULL, telemetry_sent_at_ms INTEGER, status TEXT NOT NULL, ack_state TEXT, ack_received_at TEXT, roundtrip_ms REAL, loop_latency_ms REAL )\",\n \"CREATE TABLE IF NOT EXISTS actuator_log ( id INTEGER PRIMARY KEY AUTOINCREMENT, room_id TEXT NOT NULL, load TEXT NOT NULL, state TEXT, previous TEXT, accepted INTEGER, command_id TEXT, command_ts TEXT, ack_ts TEXT, received_at TEXT NOT NULL )\",\n \"CREATE TABLE IF NOT EXISTS alerts ( id INTEGER PRIMARY KEY AUTOINCREMENT, room_id TEXT, type TEXT NOT NULL, message TEXT, ts TEXT NOT NULL )\",\n \"CREATE TABLE IF NOT EXISTS model_metrics ( id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL, created_at TEXT NOT NULL, task TEXT NOT NULL, model TEXT NOT NULL, category TEXT, split TEXT NOT NULL, metric TEXT NOT NULL, value REAL )\",\n \"CREATE TABLE IF NOT EXISTS experiment_results ( id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL, created_at TEXT NOT NULL, experiment TEXT NOT NULL, scenario TEXT NOT NULL, metric TEXT NOT NULL, value REAL, unit TEXT )\"\n];\nreturn [sql.map(s => ({ topic: s }))];",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 330,
+    "y": 140,
+    "wires": [
+      [
+        "sc_sql_init"
+      ]
+    ]
+  },
+  {
+    "id": "sc_sql_init",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "msg.topic",
+    "sql": "",
+    "name": "SQLite (create)",
+    "x": 540,
+    "y": 140,
+    "wires": [
+      [
+        "sc_db_ready"
+      ]
+    ]
+  },
+  {
+    "id": "sc_db_ready",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "DB ready",
+    "func": "// Counts finished CREATE statements; other nodes check flow.get('db_ready').\nconst done = (flow.get('db_created') || 0) + 1;\nflow.set('db_created', done);\nif (done >= 8) { flow.set('db_ready', true); node.status({ fill: 'green', shape: 'dot', text: 'tables ready' }); }\nreturn null;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 740,
+    "y": 140,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_c1",
+    "type": "comment",
+    "z": "tab_smartclass",
+    "name": "Stages 2-4: telemetry from the IoT node -> validate -> SQLite -> forward to ML service",
+    "info": "",
+    "x": 330,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "sc_in_tel",
+    "type": "mqtt in",
+    "z": "tab_smartclass",
+    "name": "smartclass/+/telemetry",
+    "topic": "smartclass/+/telemetry",
+    "qos": "1",
+    "datatype": "utf8",
+    "broker": "sc_broker",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 150,
+    "y": 260,
+    "wires": [
+      [
+        "sc_validate"
+      ]
+    ]
+  },
+  {
+    "id": "sc_validate",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Validate reading",
+    "func": "// ===== VALIDATE A SENSOR READING =====\n// Output 1: valid reading (msg.payload = object, msg.room)   Output 2: alert\nconst cfg = global.get('cfg');\nif (!cfg) { node.warn('CONFIG not loaded yet'); return null; }\nconst room = msg.topic.split('/')[1];\nconst reject = (text) => [null, { room, payload: { type: 'INVALID_READING', message: text } }];\n\nif (!cfg.allowed_rooms.includes(room)) return reject(`unknown room \"${room}\"`);\nlet r;\ntry { r = JSON.parse(msg.payload); } catch (e) { return reject('payload is not valid JSON'); }\n\n// One timestamp format everywhere: ISO 8601 with the +08:00 offset (Singapore time, as in ROBOD)\nif (typeof r.timestamp !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?\\+08:00$/.test(r.timestamp)\n    || isNaN(Date.parse(r.timestamp))) {\n    return reject(`timestamp must look like 2021-09-07T09:10:00+08:00, got \"${r.timestamp}\"`);\n}\nfor (const [field, [lo, hi, required]] of Object.entries(cfg.ranges)) {\n    const v = r[field];\n    if (v === null || v === undefined) {\n        if (required) return reject(`${r.timestamp}: ${field} is missing`);\n        r[field] = null;\n        continue;\n    }\n    if (typeof v !== 'number' || !isFinite(v) || v < lo || v > hi) {\n        return reject(`${r.timestamp}: ${field}=${v} is outside ${lo}..${hi}`);\n    }\n}\n\n// Drop duplicates: same room + same timestamp seen recently (the database also has UNIQUE(room_id, ts))\nconst seen = flow.get('seen_' + room) || [];\nif (seen.includes(r.timestamp)) {\n    const dupes = (flow.get('duplicates') || 0) + 1;\n    flow.set('duplicates', dupes);\n    node.status({ fill: 'yellow', shape: 'ring', text: `duplicates dropped: ${dupes}` });\n    return null;\n}\nseen.push(r.timestamp);\nif (seen.length > 600) seen.shift();\nflow.set('seen_' + room, seen);\nflow.set('lastSeen_' + room, Date.now());   // used by the stale-telemetry watchdog\n\nr.room_id = room;\nmsg.room = room;\nmsg.payload = r;\nnode.status({ fill: 'green', shape: 'dot', text: `${room} ${r.timestamp}` });\nreturn [msg, null];\n",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 260,
+    "wires": [
+      [
+        "sc_prep_tel",
+        "sc_to_ml",
+        "sc_sensors_ui"
+      ],
+      [
+        "sc_alert"
+      ]
+    ]
+  },
+  {
+    "id": "sc_prep_tel",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "SQL params: telemetry",
+    "func": "// Prepared-statement parameters; INSERT OR IGNORE + UNIQUE(room_id, ts) drops duplicates in the database too.\nconst r = msg.payload;\nmsg.params = {\n  $room: r.room_id, $ts: r.timestamp, $source: r.source || null, $sent: r.sent_at_ms,\n  $wifi: r.wifi_devices, $co2: r.co2_ppm, $sound: r.sound_db, $hum: r.humidity_pct, $temp: r.temperature_c,\n  $lux: r.illuminance_lux, $sp: r.setpoint_c, $tout: r.outdoor_temp_c,\n  $light: r.lighting_kwh, $fan: r.fcu_fan_kwh, $plug: r.plug_kwh, $cool: r.chilled_water_kwh,\n  $presence: r.occupant_presence, $count: r.occupant_count,\n  $received: new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 19) + '+08:00'\n};\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 640,
+    "y": 220,
+    "wires": [
+      [
+        "sc_sql_tel"
+      ]
+    ]
+  },
+  {
+    "id": "sc_sql_tel",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "prepared",
+    "sql": "INSERT OR IGNORE INTO telemetry (room_id, ts, source, sent_at_ms, wifi_devices, co2_ppm, sound_db, humidity_pct, temperature_c, illuminance_lux, setpoint_c, outdoor_temp_c, lighting_kwh, fcu_fan_kwh, plug_kwh, chilled_water_kwh_thermal, occupant_presence, occupant_count, received_at) VALUES ($room, $ts, $source, $sent, $wifi, $co2, $sound, $hum, $temp, $lux, $sp, $tout, $light, $fan, $plug, $cool, $presence, $count, $received)",
+    "name": "SQLite telemetry",
+    "x": 880,
+    "y": 220,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_to_ml",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "To ML service",
+    "func": "msg.topic = `smartclass/${msg.room}/validated`;\nmsg.payload = JSON.stringify(msg.payload);\nmsg.qos = 1; msg.retain = false;\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 630,
+    "y": 260,
+    "wires": [
+      [
+        "sc_out_ml"
+      ]
+    ]
+  },
+  {
+    "id": "sc_out_ml",
+    "type": "mqtt out",
+    "z": "tab_smartclass",
+    "name": "MQTT out: validated",
+    "topic": "",
+    "qos": "",
+    "retain": "",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "sc_broker",
+    "x": 860,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "sc_sensors_ui",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Sensors -> dashboard",
+    "func": "// Latest MEASURED reading of the room selected on the dashboard.\nif (msg.room !== (global.get('ui_room') || 'room1')) return null;\nconst r = msg.payload;\nconst f = (v, d, unit) => (v === null || v === undefined ? 'n/a' : `${Number(v).toFixed(d)} ${unit}`);\nconst truth = r.occupant_presence === null ? 'n/a' : (r.occupant_presence ? `occupied, ${r.occupant_count} people` : 'empty, 0 people');\nreturn [\n  { payload: Math.round(r.temperature_c * 10) / 10 },\n  { payload: `${f(r.illuminance_lux, 1, 'lux')} · CO2 ${f(r.co2_ppm, 0, 'ppm')}` },\n  { payload: `${r.wifi_devices} devices · ${f(r.sound_db, 1, 'dB')} · ${f(r.humidity_pct, 0, '%RH')}` },\n  { payload: truth },\n  { payload: `${r.timestamp} (outdoor ${f(r.outdoor_temp_c, 1, 'C')})` },\n  { payload: `${r.room_id} · reading ${r.timestamp} (data time, +08:00) · source: ${r.source || 'unknown'} via MQTT → Node-RED → SQLite` },\n];",
+    "outputs": 6,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 640,
+    "y": 320,
+    "wires": [
+      [
+        "sc_w_temp"
+      ],
+      [
+        "sc_w_lux"
+      ],
+      [
+        "sc_w_wifi"
+      ],
+      [
+        "sc_w_truth"
+      ],
+      [
+        "sc_w_time"
+      ],
+      [
+        "sc_w_context"
+      ]
+    ]
+  },
+  {
+    "id": "sc_c2",
+    "type": "comment",
+    "z": "tab_smartclass",
+    "name": "Stage 5 -> 6: ML analytics -> store every prediction -> decision engine",
+    "info": "",
+    "x": 280,
+    "y": 420,
+    "wires": []
+  },
+  {
+    "id": "sc_in_an",
+    "type": "mqtt in",
+    "z": "tab_smartclass",
+    "name": "smartclass/+/analytics",
+    "topic": "smartclass/+/analytics",
+    "qos": "1",
+    "datatype": "utf8",
+    "broker": "sc_broker",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 150,
+    "y": 480,
+    "wires": [
+      [
+        "sc_decision",
+        "sc_prep_pred"
+      ]
+    ]
+  },
+  {
+    "id": "sc_prep_pred",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "SQL params: predictions",
+    "func": "// One row per model per reading (task: compare the three model categories live).\nlet a; try { a = JSON.parse(msg.payload); } catch (e) { return null; }\nconst rows = Object.entries(a.models || {}).map(([model, m]) => ({ params: {\n  $room: a.room_id, $ts: a.timestamp, $model: model, $cat: m.category, $p: m.p, $lat: m.latency_ms } }));\nreturn [rows];",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 400,
+    "y": 540,
+    "wires": [
+      [
+        "sc_sql_pred"
+      ]
+    ]
+  },
+  {
+    "id": "sc_sql_pred",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "prepared",
+    "sql": "INSERT OR IGNORE INTO predictions (room_id, ts, model, category, probability, latency_ms) VALUES ($room, $ts, $model, $cat, $p, $lat)",
+    "name": "SQLite predictions",
+    "x": 640,
+    "y": 540,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_decision",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Decision rules",
+    "func": "// ===== DECISION ENGINE (Stage 6) =====\n// Input : msg.payload = analytics JSON from ml_service.py (all model predictions + DQN recommendation + reading).\n// Output 1: decision {light, ac, reason, light_source, ac_source, dqn_status, ...}   Output 2: alert\n// PRIORITY (highest first): manual override > minimum-hold time > comfort safety guard > selected AC controller\n//   (CONFIG ac_controller: 'rules' or 'dqn') > missing-model fallback. ac_source / light_source record which one decided.\n// Timers use DATA time (the reading's timestamp), so a 1-second replay behaves like real 5-minute steps.\nconst cfg = global.get('cfg');\nif (!cfg) { node.warn('CONFIG not loaded yet'); return null; }\n\nlet a;\ntry { a = typeof msg.payload === 'string' ? JSON.parse(msg.payload) : msg.payload; }\ncatch (e) { node.warn('analytics is not JSON'); return null; }\n\nconst room = a.room_id;\nconst r = a.reading || {};\nconst t = Date.parse(a.timestamp);\nconst MIN = 60000;\nconst roomCfg = cfg.rooms[room] || { lux_dim_threshold: null };\nconst LIGHT_RANK = { OFF: 0, DIM: 1, ON: 2 };\nconst AC_RANK = { OFF: 0, ECO: 1, PRECOOL: 2, COMFORT: 2, BOOST: 3 };\nlet alert = null;\n\n// ---- (d) start-up state: nothing is assumed ON ----\nlet s = flow.get('state_' + room);\nconst fresh = !s || t < s.lastTs || (t - s.lastTs) > cfg.reset_gap_min * MIN;\nif (fresh) {\n    s = { occupied: null, emptySince: null, light: null, ac: null, lightAt: null, acAt: null, lastTs: t, modelMissing: false };\n}\n\nconst temp = Number(r.temperature_c);\nconst lux = r.illuminance_lux;\nconst comfort = cfg.comfort_setpoint_c;\nconst pArrival = Number(a.p_arrival_30min || 0);\nconst pRaw = a.occupancy_probability;\nlet light, ac, reason, occupied;\nlet lightSource = 'rules', acSource = 'rules';\nconst dqnRec = a.dqn_ac_action || null;\nlet dqnStatus = !dqnRec ? 'no recommendation' : (cfg.ac_controller === 'dqn' ? 'applied' : 'advisory only (CONFIG ac_controller = rules)');\n\nif (pRaw === null || pRaw === undefined || !isFinite(Number(pRaw))) {\n    // ---- missing-model safeguard: deterministic, never guesses ----\n    if (!s.modelMissing) alert = { room, payload: { type: 'MODEL_UNAVAILABLE', message: `no occupancy probability at ${a.timestamp}` } };\n    s.modelMissing = true;\n    const hour = new Date(t + 8 * 3600e3).getUTCHours();\n    const inHours = hour >= cfg.fallback_schedule.start_hour && hour < cfg.fallback_schedule.end_hour;\n    light = s.light !== null ? s.light : (inHours ? 'ON' : 'OFF');\n    ac = s.ac !== null ? s.ac : (inHours ? 'COMFORT' : 'ECO');\n    occupied = s.occupied;\n    reason = s.light !== null ? 'no model output: holding last commands' : `no model output: timetable ${inHours ? 'ON' : 'OFF'}`;\n    lightSource = acSource = 'missing-model fallback';\n    if (dqnRec) dqnStatus = 'not applied (no occupancy estimate)';\n} else {\n    s.modelMissing = false;\n    const p = Number(pRaw);\n    // ---- (c) occupancy hysteresis on the ML probability ----\n    if (s.occupied === null) occupied = p >= cfg.occupancy_on_above;\n    else if (s.occupied) occupied = p >= cfg.occupancy_off_below;\n    else occupied = p >= cfg.occupancy_on_above;\n\n    if (occupied) s.emptySince = null;\n    else if (s.emptySince === null) s.emptySince = s.occupied === null ? t - cfg.light_off_after_min * MIN : t;\n    const emptyMin = occupied ? 0 : (t - s.emptySince) / MIN;\n    const src = `${a.primary_model}${a.primary_fallback ? ' (fallback)' : ''}${a.warming_up ? ', warming up' : ''}`;\n\n    // ---- lighting: always rule-based ----\n    let acRule;\n    if (occupied) {\n        const dim = roomCfg.lux_dim_threshold !== null && lux !== null && lux >= roomCfg.lux_dim_threshold;\n        light = dim ? 'DIM' : 'ON';\n        acRule = temp > comfort + cfg.boost_above_comfort_c ? 'BOOST' : 'COMFORT';\n        reason = `occupied (p=${p.toFixed(2)} ${src})` + (dim ? `, daylight ${Math.round(lux)} lux -> dim` : '');\n    } else if (emptyMin < cfg.light_off_after_min) {\n        light = s.light; acRule = s.ac;\n        reason = `empty ${Math.round(emptyMin)} min (p=${p.toFixed(2)} ${src}); waiting ${cfg.light_off_after_min} min`;\n    } else {\n        light = 'OFF';\n        const arrivalExpected = pArrival >= cfg.precool_probability;\n        if (arrivalExpected && temp > comfort + cfg.precool_only_if_above_comfort_c) {\n            acRule = 'PRECOOL';\n            reason = `empty, arrival likely in 30 min (p=${pArrival.toFixed(2)}) and ${temp.toFixed(1)} C -> pre-cool`;\n        } else if (emptyMin >= cfg.ac_off_after_min && !arrivalExpected) {\n            acRule = 'OFF';\n            reason = `empty ${Math.round(emptyMin)} min, no arrival expected -> AC off`;\n        } else {\n            acRule = 'ECO';\n            reason = `empty ${Math.round(emptyMin)} min -> lights off, AC eco`;\n        }\n    }\n\n    // ---- AC: rules, or the Dueling-DQN recommendation behind the safety layer ----\n    const dqn = a.dqn_ac_action;\n    if (cfg.ac_controller === 'dqn' && dqn && dqn in AC_RANK) {\n        ac = dqn;\n        acSource = 'DQN';\n        reason += ` | AC by DQN: ${dqn}`;\n        if (occupied && temp > comfort + cfg.dqn_comfort_guard_c && AC_RANK[ac] < AC_RANK.COMFORT) {\n            ac = 'COMFORT';\n            acSource = 'comfort safety guard';\n            dqnStatus = `overridden by comfort guard (DQN wanted ${dqn})`;\n            reason += ` -> COMFORT (safety: occupied at ${temp.toFixed(1)} C)`;\n        }\n    } else {\n        ac = acRule;\n        if (cfg.ac_controller === 'dqn') { reason += ' | DQN unavailable: rule-based AC'; acSource = 'rules (DQN unavailable)'; }\n        else if (occupied && ac === 'BOOST') reason += `, ${temp.toFixed(1)} C > comfort+${cfg.boost_above_comfort_c}`;\n    }\n\n    // ---- (c) minimum hold time: switching UP for an occupied room is immediate; anything else waits ----\n    const hold = (newState, oldState, changedAt, rank) => {\n        if (oldState === null || newState === oldState || changedAt === null) return false;\n        return !(occupied && rank[newState] > rank[oldState]) && (t - changedAt) < cfg.min_hold_min * MIN;\n    };\n    if (hold(light, s.light, s.lightAt, LIGHT_RANK)) { light = s.light; lightSource = 'minimum hold'; reason += ' [light held: min time]'; }\n    if (hold(ac, s.ac, s.acAt, AC_RANK)) {\n        if (acSource === 'DQN') dqnStatus = `delayed by minimum hold (DQN wanted ${ac})`;\n        ac = s.ac; acSource = 'minimum hold'; reason += ' [AC held: min time]';\n    }\n}\n\n// ---- manual override always wins ----\nconst ov = global.get('override_' + room);\nif (ov && ov.enabled) {\n    light = ov.light || light; ac = ov.ac || ac;\n    if (ov.light) lightSource = 'manual override';\n    if (ov.ac) { acSource = 'manual override'; if (dqnRec) dqnStatus = 'ignored (manual override)'; }\n    reason = `MANUAL OVERRIDE (light ${light}, AC ${ac})`;\n}\n\nif (light !== s.light) s.lightAt = t;\nif (ac !== s.ac) s.acAt = t;\ns.light = light; s.ac = ac; s.occupied = occupied === undefined ? s.occupied : occupied; s.lastTs = t;\nflow.set('state_' + room, s);\n\nmsg.room = room;\nmsg.payload = {\n    room_id: room, ts: a.timestamp, occupied: !!occupied,\n    occupancy_probability: pRaw === undefined ? null : pRaw, primary_model: a.primary_model || null,\n    models: a.models || {}, warming_up: !!a.warming_up, ml_latency_ms: a.ml_latency_ms,\n    p_arrival_30min: pArrival, ac_controller: cfg.ac_controller, dqn_ac_action: a.dqn_ac_action || null,\n    light, ac, reason, light_source: lightSource, ac_source: acSource, dqn_status: dqnStatus,\n    predicted_next_lighting_kwh: a.predicted_next_lighting_kwh,\n    predicted_next_chilled_water_kwh_thermal: a.predicted_next_chilled_water_kwh_thermal,\n    telemetry_sent_at_ms: r.sent_at_ms === undefined ? null : r.sent_at_ms,\n    reading: r,\n};\nnode.status({ fill: occupied ? 'green' : 'grey', shape: 'dot', text: `${room}: light ${light}, AC ${ac} (${cfg.ac_controller})` });\nreturn [msg, alert];\n",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 480,
+    "wires": [
+      [
+        "sc_gate",
+        "sc_prep_dec",
+        "sc_savings",
+        "sc_decision_ui"
+      ],
+      [
+        "sc_alert"
+      ]
+    ]
+  },
+  {
+    "id": "sc_prep_dec",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "SQL params: decision",
+    "func": "const d = msg.payload;\nmsg.params = {\n  $room: d.room_id, $ts: d.ts, $pm: d.primary_model, $p: d.occupancy_probability, $occ: d.occupied ? 1 : 0,\n  $arr: d.p_arrival_30min, $pl: d.predicted_next_lighting_kwh, $pc: d.predicted_next_chilled_water_kwh_thermal,\n  $ctrl: d.ac_controller, $dqn: d.dqn_ac_action, $light: d.light, $ac: d.ac, $reason: d.reason\n};\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 640,
+    "y": 600,
+    "wires": [
+      [
+        "sc_sql_dec"
+      ]
+    ]
+  },
+  {
+    "id": "sc_sql_dec",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "prepared",
+    "sql": "INSERT OR IGNORE INTO decisions (room_id, ts, primary_model, occupancy_probability, occupied, p_arrival_30min, predicted_next_lighting_kwh, predicted_next_chilled_water_kwh_thermal, ac_controller, dqn_ac_action, light_cmd, ac_cmd, reason) VALUES ($room, $ts, $pm, $p, $occ, $arr, $pl, $pc, $ctrl, $dqn, $light, $ac, $reason)",
+    "name": "SQLite decisions",
+    "x": 860,
+    "y": 600,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_savings",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Baseline vs controlled + comfort",
+    "func": "// ===== BASELINE vs CONTROLLED + LIVE COMFORT (cumulative per room since start / Reset) =====\n// Baseline [M]   = energy exactly as recorded by ROBOD.\n// Controlled [S] = the same recorded energy scaled by our command (simulated counterfactual, not a measurement).\n// Lighting (electrical) and chilled water (THERMAL) are kept in separate charts and are never added together.\n// Comfort proxies: camera says occupied [M] while our light command is OFF / AC is ECO or OFF [S].\nconst cfg = global.get('cfg');\nconst d = msg.payload;\nconst r = d.reading || {};\nconst lightFactor = { ON: 1, DIM: cfg.dim_factor, OFF: 0 }[d.light] ?? 1;\nconst coolFactor = { OFF: 0, ECO: cfg.eco_factor }[d.ac] ?? 1;   // COMFORT/BOOST/PRECOOL = as recorded\n\nconst key = 'totals_' + d.room_id;\nconst tot = flow.get(key) || { light_base: 0, light_ctrl: 0, cool_base: 0, cool_ctrl: 0, first_ts: d.ts, last_ts: d.ts,\n                               readings: 0, occupied: 0, light_off_occupied: 0, ac_low_occupied: 0, energy_missing: 0 };\ntot.readings += 1;\ntot.last_ts = d.ts;\nif (r.lighting_kwh === null || r.lighting_kwh === undefined || r.chilled_water_kwh === null || r.chilled_water_kwh === undefined) tot.energy_missing += 1;\ntot.light_base += r.lighting_kwh || 0;\ntot.light_ctrl += (r.lighting_kwh || 0) * lightFactor;\ntot.cool_base += r.chilled_water_kwh || 0;\ntot.cool_ctrl += (r.chilled_water_kwh || 0) * coolFactor;\nif (r.occupant_presence === 1) {\n    tot.occupied += 1;\n    if (d.light === 'OFF') tot.light_off_occupied += 1;\n    if (d.ac === 'ECO' || d.ac === 'OFF') tot.ac_low_occupied += 1;\n}\nflow.set(key, tot);\n\nif (d.room_id !== (global.get('ui_room') || 'room1')) return null;\n// No misleading zeros: a percentage needs a non-zero baseline / at least one occupied reading.\nconst pct = (b, c) => (b > 0 ? `${((1 - c / b) * 100).toFixed(1)}%` : 'n/a (no recorded energy yet)');\nconst share = (n, of) => (of > 0 ? `${n} of ${of} (${(100 * n / of).toFixed(1)}%)` : 'n/a (no occupied readings yet)');\nconst window = `${d.room_id}, data time ${String(tot.first_ts).slice(0, 16).replace('T', ' ')} → ${String(tot.last_ts).slice(11, 16)} (+08:00), ${tot.readings} readings`;\nreturn [\n    [{ topic: 'Lighting baseline [M] (kWh)', payload: +tot.light_base.toFixed(4) },\n     { topic: 'Lighting controlled [S] (kWh)', payload: +tot.light_ctrl.toFixed(4) }],\n    [{ topic: 'Chilled water baseline [M] (thermal kWh)', payload: +tot.cool_base.toFixed(3) },\n     { topic: 'Chilled water controlled [S] (thermal kWh)', payload: +tot.cool_ctrl.toFixed(3) }],\n    { payload: `Lighting (electrical): ${pct(tot.light_base, tot.light_ctrl)} · Chilled water (thermal, ECO factor ${cfg.eco_factor}): ${pct(tot.cool_base, tot.cool_ctrl)} — simulated counterfactual, ${window}` +\n               (tot.energy_missing ? ` · ${tot.energy_missing} readings without energy values counted as 0` : '') },\n    { payload: `light OFF while occupied: ${share(tot.light_off_occupied, tot.occupied)} · AC ECO/OFF while occupied: ${share(tot.ac_low_occupied, tot.occupied)} — camera label [M] vs our commands [S], ${window}` },\n];\n",
+    "outputs": 4,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 640,
+    "y": 660,
+    "wires": [
+      [
+        "sc_w_save_light"
+      ],
+      [
+        "sc_w_save_cool"
+      ],
+      [
+        "sc_w_save_text"
+      ],
+      [
+        "sc_w_comfort"
+      ]
+    ]
+  },
+  {
+    "id": "sc_decision_ui",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Decision -> dashboard",
+    "func": "if (msg.room !== (global.get('ui_room') || 'room1')) return null;\nconst d = msg.payload, r = d.reading || {};\nconst p = d.occupancy_probability;\nconst models = Object.entries(d.models).map(([name, m]) => ({ model: name + (name === d.primary_model ? '  ★ primary' : ''),\n  category: m.category, 'P(occupied) [P]': m.p, 'inference ms': m.latency_ms }));\nconst dqnLine = d.dqn_ac_action ? `${d.dqn_ac_action} — ${d.dqn_status}` : 'no recommendation';\nreturn [\n  { payload: p === null ? 'no model output (fallback active)' : `${d.occupied ? 'OCCUPIED' : 'EMPTY'} (p = ${Number(p).toFixed(2)}, model ${d.primary_model})` },\n  { payload: `${(d.p_arrival_30min * 100).toFixed(0)} %` },\n  { payload: `${d.light} — set by ${d.light_source}` },\n  { payload: `${d.ac} — set by ${d.ac_source}` },\n  { payload: d.reason },\n  [ { topic: 'Occupancy probability [P]', payload: p },\n    { topic: 'Camera occupancy [M]', payload: r.occupant_presence } ].filter(m => m.payload !== null && m.payload !== undefined),\n  { payload: models },\n  { payload: `${d.ml_latency_ms} ms for all ${Object.keys(d.models).length} models${d.warming_up ? ' · warming up (window < 1 h)' : ''}` },\n  { payload: dqnLine },\n  r.lighting_kwh === null || r.lighting_kwh === undefined ? null : { topic: 'Lighting [M] (electrical kWh / 5 min)', payload: r.lighting_kwh },\n  r.chilled_water_kwh === null || r.chilled_water_kwh === undefined ? null : { topic: 'Chilled water [M] (thermal kWh / 5 min)', payload: r.chilled_water_kwh },\n];",
+    "outputs": 11,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 640,
+    "y": 720,
+    "wires": [
+      [
+        "sc_w_occ"
+      ],
+      [
+        "sc_w_arr"
+      ],
+      [
+        "sc_w_light_cmd"
+      ],
+      [
+        "sc_w_ac_cmd"
+      ],
+      [
+        "sc_w_reason"
+      ],
+      [
+        "sc_w_chart"
+      ],
+      [
+        "sc_w_models"
+      ],
+      [
+        "sc_w_ml_latency"
+      ],
+      [
+        "sc_w_dqn"
+      ],
+      [
+        "sc_w_chart_light"
+      ],
+      [
+        "sc_w_chart_cool"
+      ]
+    ]
+  },
+  {
+    "id": "sc_c3",
+    "type": "comment",
+    "z": "tab_smartclass",
+    "name": "Stage 7: change-only gate -> MQTT control commands (retained) -> commands table",
+    "info": "",
+    "x": 290,
+    "y": 800,
+    "wires": []
+  },
+  {
+    "id": "sc_gate",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Change-only gate",
+    "func": "// ===== CHANGE-ONLY GATE + COMMAND RECORD (Stage 7) =====\n// Publishes a control command only when the commanded state changes. Every command gets a command_id,\n// is stored in SQLite (status SENT) and is tracked until the actuator acknowledges it (or NO_ACK).\n// Output 1: MQTT messages (retained, QoS 1)   Output 2: SQL parameters for the commands table\nconst d = msg.payload;\nconst mqttOut = [], sqlOut = [];\nconst pending = flow.get('pending') || {};\nconst stats = flow.get('cmd_stats') || { sent: 0, acked: 0, rejected: 0, no_ack: 0, rtt_sum: 0, rtt_n: 0, loop_sum: 0, loop_n: 0 };\nconst nowMs = Date.now();\n// seq makes IDs unique even when two decisions for the same reading arrive in the same millisecond\nlet seq = context.get('seq') || 0;\nconst nowSgt = new Date(nowMs + 8 * 3600e3).toISOString().slice(0, 19) + '+08:00';\nfor (const load of ['light', 'ac']) {\n    const key = `sent_${d.room_id}_${load}`;\n    const cmd = d[load];\n    if (cmd === null || cmd === undefined || flow.get(key) === cmd) continue;\n    flow.set(key, cmd);\n    seq += 1; context.set('seq', seq);\n    const commandId = `${d.room_id}/${load}/${d.ts}/${nowMs}-${seq}`;\n    const command = { command_id: commandId, room_id: d.room_id, cmd, ts: d.ts, reason: d.reason,\n                      telemetry_sent_at_ms: d.telemetry_sent_at_ms, sent_at_ms: nowMs };\n    flow.set(`commanded_${d.room_id}_${load}`, command);\n    pending[commandId] = { sent_ms: nowMs, room: d.room_id, load, cmd, reason: d.reason, data_ts: d.ts, sent_at: nowSgt,\n                          tel_ms: d.telemetry_sent_at_ms };\n    stats.sent += 1;\n    mqttOut.push({ topic: `smartclass/${d.room_id}/control/${load}`, payload: JSON.stringify(command), qos: 1, retain: true });\n    sqlOut.push({ params: { $id: commandId, $room: d.room_id, $load: load, $cmd: cmd, $reason: d.reason, $data_ts: d.ts,\n                            $sent_at: nowSgt, $sent_ms: nowMs, $tel_ms: d.telemetry_sent_at_ms } });\n}\nflow.set('pending', pending);\nflow.set('cmd_stats', stats);\nif (mqttOut.length) node.status({ fill: 'blue', shape: 'dot', text: `sent ${stats.sent} commands · pending ${Object.keys(pending).length}` });\nreturn [mqttOut, sqlOut];\n",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 440,
+    "wires": [
+      [
+        "sc_out_ctrl"
+      ],
+      [
+        "sc_sql_cmd"
+      ]
+    ]
+  },
+  {
+    "id": "sc_out_ctrl",
+    "type": "mqtt out",
+    "z": "tab_smartclass",
+    "name": "MQTT out: control (retained)",
+    "topic": "",
+    "qos": "",
+    "retain": "",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "sc_broker",
+    "x": 880,
+    "y": 420,
+    "wires": []
+  },
+  {
+    "id": "sc_sql_cmd",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "prepared",
+    "sql": "INSERT OR IGNORE INTO commands (command_id, room_id, load, cmd, reason, data_ts, sent_at, sent_at_ms, telemetry_sent_at_ms, status) VALUES ($id, $room, $load, $cmd, $reason, $data_ts, $sent_at, $sent_ms, $tel_ms, 'SENT')",
+    "name": "SQLite commands (SENT)",
+    "x": 880,
+    "y": 460,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_c4",
+    "type": "comment",
+    "z": "tab_smartclass",
+    "name": "Stage 8: actuator acknowledgements from the IoT node -> store, latency, delivery status",
+    "info": "",
+    "x": 320,
+    "y": 880,
+    "wires": []
+  },
+  {
+    "id": "sc_in_ack",
+    "type": "mqtt in",
+    "z": "tab_smartclass",
+    "name": "smartclass/+/actuator/+",
+    "topic": "smartclass/+/actuator/+",
+    "qos": "1",
+    "datatype": "utf8",
+    "broker": "sc_broker",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 150,
+    "y": 940,
+    "wires": [
+      [
+        "sc_ack"
+      ]
+    ]
+  },
+  {
+    "id": "sc_ack",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Check acknowledgement",
+    "func": "// ===== ACTUATOR ACKNOWLEDGEMENT (Stage 8 -> server) =====\n// Output 1: SQL actuator_log   2: SQL update of the commands table   3: dashboard text (light/ac)\n//        4: alert              5: system-health text   6: latency chart points (selected room)\nconst [, room, , load] = msg.topic.split('/');   // smartclass/{room}/actuator/{load}\nlet ack;\ntry { ack = JSON.parse(msg.payload); } catch (e) { return [null, null, null, { room, payload: { type: 'BAD_ACK', message: `unreadable ack on ${msg.topic}` } }, null, null]; }\nconst nowMs = Date.now();\nconst nowSgt = new Date(nowMs + 8 * 3600e3).toISOString().slice(0, 19) + '+08:00';\nflow.set(`actuator_${room}_${load}`, ack.state);\n\n// Retained acks from a previous run can arrive before the tables exist: show them, but only store after DB is ready.\nconst dbReady = flow.get('db_ready') === true;\nconst log = !dbReady ? null : { params: { $room: room, $load: load, $state: ack.state, $previous: ack.previous, $accepted: ack.accepted ? 1 : 0,\n                        $command_id: ack.command_id || null, $command_ts: ack.command_ts || null, $ack_ts: ack.ts || null, $received_at: nowSgt } };\n\nconst pending = flow.get('pending') || {};\nconst stats = flow.get('cmd_stats') || { sent: 0, acked: 0, rejected: 0, no_ack: 0, rtt_sum: 0, rtt_n: 0, loop_sum: 0, loop_n: 0 };\nlet update = null, alert = null, chart = null;\nconst timedOut = flow.get('timed_out') || {};\nlet sent = ack.command_id ? pending[ack.command_id] : undefined;\nlet late = false;\nif (!sent && ack.command_id && timedOut[ack.command_id]) {   // arrived after the NO_ACK timeout: record it as late\n    sent = timedOut[ack.command_id]; late = true;\n    delete timedOut[ack.command_id]; flow.set('timed_out', timedOut);\n}\nif (sent) {                                   // an acknowledgement for a command sent by THIS Node-RED run\n    delete pending[ack.command_id];\n    const rtt = nowMs - sent.sent_ms;          // server clock only: publish -> ack received\n    const loop = typeof ack.loop_latency_ms === 'number' ? ack.loop_latency_ms : null;   // node clock only\n    if (late) {\n        stats.late_ack = (stats.late_ack || 0) + 1;\n        alert = { room, payload: { type: 'LATE_ACK', message: `${load} ${sent.cmd} acknowledged after ${rtt} ms (after the NO_ACK timeout)` } };\n    } else if (ack.accepted) stats.acked += 1; else stats.rejected += 1;\n    stats.rtt_sum += rtt; stats.rtt_n += 1;\n    if (loop !== null) { stats.loop_sum += loop; stats.loop_n += 1; }\n    stats.last_rtt = rtt; stats.last_loop = loop;\n    if (room === (global.get('ui_room') || 'room1')) {\n        chart = [{ topic: 'Command round trip, server clock (ms)', payload: rtt }];\n        if (loop !== null) chart.push({ topic: 'Telemetry → actuator loop, node clock (ms)', payload: loop });\n    }\n    // Full record (UPSERT): correct even if the database runs this before the SENT insert of the same command.\n    update = !dbReady ? null : { params: { $id: ack.command_id, $room: sent.room, $load: sent.load, $cmd: sent.cmd, $reason: sent.reason,\n                         $data_ts: sent.data_ts, $sent_at: sent.sent_at, $sent_ms: sent.sent_ms, $tel_ms: sent.tel_ms,\n                         $status: late ? (ack.accepted ? 'ACKED_LATE' : 'REJECTED') : (ack.accepted ? 'ACKED' : 'REJECTED'), $state: ack.state, $at: nowSgt, $rtt: rtt, $loop: loop } };\n    flow.set('pending', pending);\n    flow.set('cmd_stats', stats);\n}\nconst commanded = flow.get(`commanded_${room}_${load}`);\nif (alert) {\n    // LATE_ACK already set\n} else if (ack.accepted === false) {\n    alert = { room, payload: { type: 'ACTUATOR_REJECTED', message: `${load} rejected command \"${ack.requested}\"` } };\n} else if (commanded && ack.command_id === commanded.command_id && ack.state !== commanded.cmd) {\n    alert = { room, payload: { type: 'ACTUATOR_MISMATCH', message: `${load} is ${ack.state}, commanded ${commanded.cmd}` } };\n}\nconst show = room === (global.get('ui_room') || 'room1') ? { topic: load, payload: `${ack.state} (was ${ack.previous})` } : null;\nconst avg = (sum, n) => (n ? `${(sum / n).toFixed(0)} ms` : 'n/a');\nconst decided = stats.acked + stats.rejected + stats.no_ack;\nconst rate = decided ? `${stats.acked}/${decided} = ${(100 * stats.acked / decided).toFixed(1)}%` : 'n/a (no command decided yet)';\nconst health = { payload: `delivery rate ${rate} · sent ${stats.sent} · rejected ${stats.rejected} · no-ack ${stats.no_ack} · late ack ${stats.late_ack || 0} · pending ${Object.keys(pending).length} · ` +\n    `round trip avg ${avg(stats.rtt_sum, stats.rtt_n)} · telemetry→actuator avg ${avg(stats.loop_sum, stats.loop_n)} (since Node-RED start / Reset)` };\nreturn [log, update, show, alert, health, chart];\n",
+    "outputs": 6,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 940,
+    "wires": [
+      [
+        "sc_sql_ack"
+      ],
+      [
+        "sc_sql_ack_upd"
+      ],
+      [
+        "sc_ack_route"
+      ],
+      [
+        "sc_alert"
+      ],
+      [
+        "sc_w_health"
+      ],
+      [
+        "sc_w_latency"
+      ]
+    ]
+  },
+  {
+    "id": "sc_sql_ack",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "prepared",
+    "sql": "INSERT INTO actuator_log (room_id, load, state, previous, accepted, command_id, command_ts, ack_ts, received_at) VALUES ($room, $load, $state, $previous, $accepted, $command_id, $command_ts, $ack_ts, $received_at)",
+    "name": "SQLite actuator_log",
+    "x": 660,
+    "y": 900,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_sql_ack_upd",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "prepared",
+    "sql": "INSERT INTO commands (command_id, room_id, load, cmd, reason, data_ts, sent_at, sent_at_ms, telemetry_sent_at_ms, status, ack_state, ack_received_at, roundtrip_ms, loop_latency_ms) VALUES ($id, $room, $load, $cmd, $reason, $data_ts, $sent_at, $sent_ms, $tel_ms, $status, $state, $at, $rtt, $loop) ON CONFLICT(command_id) DO UPDATE SET status = excluded.status, ack_state = excluded.ack_state, ack_received_at = excluded.ack_received_at, roundtrip_ms = excluded.roundtrip_ms, loop_latency_ms = excluded.loop_latency_ms",
+    "name": "SQLite commands (ACK upsert)",
+    "x": 660,
+    "y": 940,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_ack_route",
+    "type": "switch",
+    "z": "tab_smartclass",
+    "name": "light / ac",
+    "property": "topic",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "eq",
+        "v": "light",
+        "vt": "str"
+      },
+      {
+        "t": "eq",
+        "v": "ac",
+        "vt": "str"
+      }
+    ],
+    "checkall": "true",
+    "repair": false,
+    "outputs": 2,
+    "x": 640,
+    "y": 980,
+    "wires": [
+      [
+        "sc_w_light_act"
+      ],
+      [
+        "sc_w_ac_act"
+      ]
+    ]
+  },
+  {
+    "id": "sc_c5",
+    "type": "comment",
+    "z": "tab_smartclass",
+    "name": "Health: device status (Last Will), watchdog (stale telemetry, NO_ACK), alerts",
+    "info": "",
+    "x": 290,
+    "y": 1060,
+    "wires": []
+  },
+  {
+    "id": "sc_in_status",
+    "type": "mqtt in",
+    "z": "tab_smartclass",
+    "name": "smartclass/+/status",
+    "topic": "smartclass/+/status",
+    "qos": "1",
+    "datatype": "utf8",
+    "broker": "sc_broker",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 140,
+    "y": 1120,
+    "wires": [
+      [
+        "sc_status"
+      ]
+    ]
+  },
+  {
+    "id": "sc_in_act_status",
+    "type": "mqtt in",
+    "z": "tab_smartclass",
+    "name": "smartclass/+/actuator_status",
+    "topic": "smartclass/+/actuator_status",
+    "qos": "1",
+    "datatype": "utf8",
+    "broker": "sc_broker",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 160,
+    "y": 1160,
+    "wires": [
+      [
+        "sc_status"
+      ]
+    ]
+  },
+  {
+    "id": "sc_status",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Device status",
+    "func": "// Online/offline status of every device (Last Will messages arrive here too).\nconst parts = msg.topic.split('/');\nconst names = { ml_service: 'ML service', nodered: 'Node-RED' };\nconst device = parts[2] === 'actuator_status' ? `actuators ${parts[1]}` : (names[parts[1]] || `sensor ${parts[1]}`);\nconst devices = flow.get('devices') || {};\nconst was = devices[device];\ndevices[device] = msg.payload;\nflow.set('devices', devices);\nconst text = Object.entries(devices).map(([k, v]) => `${k}: ${v}`).join(' · ');\nconst alert = (msg.payload === 'offline' && was === 'online')\n  ? { room: parts[1].startsWith('room') ? parts[1] : 'system', payload: { type: 'DEVICE_OFFLINE', message: `${device} went offline` } } : null;\nreturn [{ payload: text }, alert];",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 400,
+    "y": 1140,
+    "wires": [
+      [
+        "sc_w_devices"
+      ],
+      [
+        "sc_alert"
+      ]
+    ]
+  },
+  {
+    "id": "sc_i_watch",
+    "type": "inject",
+    "z": "tab_smartclass",
+    "name": "every 2 s",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "2",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "1",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 130,
+    "y": 1220,
+    "wires": [
+      [
+        "sc_watchdog"
+      ]
+    ]
+  },
+  {
+    "id": "sc_watchdog",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Watchdog (stale data, NO_ACK)",
+    "func": "// ===== WATCHDOG (runs every 2 s) =====\n// (f) stale telemetry: a room that sent readings before but nothing valid for cfg.stale_after_s REAL seconds\n//     -> one STALE_TELEMETRY alert; no new decisions are made, so the last commands are held.\n// Command delivery: a command not acknowledged within cfg.ack_timeout_s -> NO_ACK alert + commands.status = NO_ACK.\n// Output 1: alerts   Output 2: SQL updates (NO_ACK)\nconst cfg = global.get('cfg');\nif (!cfg) return null;\nconst alerts = [], updates = [];\nfor (const room of cfg.allowed_rooms) {\n    const last = flow.get('lastSeen_' + room);\n    if (!last) continue;\n    const ageS = (Date.now() - last) / 1000;\n    const flagged = flow.get('stale_' + room) || false;\n    if (ageS > cfg.stale_after_s && !flagged) {\n        flow.set('stale_' + room, true);\n        alerts.push({ room, payload: { type: 'STALE_TELEMETRY', message: `no valid reading for ${Math.round(ageS)} s; holding last commands` } });\n    } else if (ageS <= cfg.stale_after_s && flagged) {\n        flow.set('stale_' + room, false);\n        alerts.push({ room, payload: { type: 'TELEMETRY_RESUMED', message: 'readings are arriving again' } });\n    }\n}\nconst pending = flow.get('pending') || {};\nconst timedOut = flow.get('timed_out') || {};    // kept so a LATE acknowledgement can still be matched (ack.js)\nconst stats = flow.get('cmd_stats');\nfor (const [id, p] of Object.entries(pending)) {\n    if (Date.now() - p.sent_ms > cfg.ack_timeout_s * 1000) {\n        delete pending[id];\n        timedOut[id] = p;\n        if (stats) stats.no_ack += 1;\n        alerts.push({ room: p.room, payload: { type: 'NO_ACK', message: `${p.load} ${p.cmd} not acknowledged within ${cfg.ack_timeout_s} s` } });\n        updates.push({ params: { $id: id } });\n    }\n}\nconst ids = Object.keys(timedOut);\nfor (const id of ids.slice(0, Math.max(0, ids.length - 200))) delete timedOut[id];   // remember the latest 200 only\nflow.set('pending', pending);\nflow.set('timed_out', timedOut);\nif (stats) flow.set('cmd_stats', stats);\nreturn [alerts, updates];\n",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 1220,
+    "wires": [
+      [
+        "sc_alert"
+      ],
+      [
+        "sc_sql_noack"
+      ]
+    ]
+  },
+  {
+    "id": "sc_sql_noack",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "prepared",
+    "sql": "UPDATE commands SET status = 'NO_ACK' WHERE command_id = $id AND status = 'SENT'",
+    "name": "SQLite commands (NO_ACK)",
+    "x": 620,
+    "y": 1260,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_alert",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Publish alert",
+    "func": "// ===== PUBLISH AN ALERT =====\n// Input: msg.room + msg.payload {type, message}\n// Output 1: MQTT smartclass/{room}/alert   2: SQL params   3: alert table   4: pop-up\nconst nowSgt = new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 19) + '+08:00';\nconst room = msg.room || 'system';\nconst alert = { room_id: room, type: msg.payload.type, message: msg.payload.message, ts: nowSgt };\n\nconst recent = flow.get('recent_alerts') || [];\nrecent.unshift({ time: nowSgt.slice(11, 19), room, type: alert.type, message: alert.message });\nif (recent.length > 20) recent.length = 20;\nflow.set('recent_alerts', recent);\n\nconst popupTypes = ['STALE_TELEMETRY', 'ACTUATOR_MISMATCH', 'ACTUATOR_REJECTED', 'DEVICE_OFFLINE'];\nreturn [\n    { topic: `smartclass/${room}/alert`, payload: JSON.stringify(alert), qos: 1, retain: false },\n    { params: { $room: room, $type: alert.type, $message: alert.message, $ts: nowSgt } },\n    { payload: recent },\n    popupTypes.includes(alert.type) ? { payload: `${room}: ${alert.type} - ${alert.message}` } : null,\n];\n",
+    "outputs": 4,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 660,
+    "y": 1180,
+    "wires": [
+      [
+        "sc_out_alert"
+      ],
+      [
+        "sc_sql_alert"
+      ],
+      [
+        "sc_w_alerts"
+      ],
+      [
+        "sc_w_popup"
+      ]
+    ]
+  },
+  {
+    "id": "sc_out_alert",
+    "type": "mqtt out",
+    "z": "tab_smartclass",
+    "name": "MQTT out: alert",
+    "topic": "",
+    "qos": "",
+    "retain": "",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "sc_broker",
+    "x": 900,
+    "y": 1120,
+    "wires": []
+  },
+  {
+    "id": "sc_sql_alert",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "prepared",
+    "sql": "INSERT INTO alerts (room_id, type, message, ts) VALUES ($room, $type, $message, $ts)",
+    "name": "SQLite alerts",
+    "x": 890,
+    "y": 1160,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_c6",
+    "type": "comment",
+    "z": "tab_smartclass",
+    "name": "Model comparison: latest training run in SQLite model_metrics (written by train_models.py)",
+    "info": "",
+    "x": 330,
+    "y": 1320,
+    "wires": []
+  },
+  {
+    "id": "sc_i_compare",
+    "type": "inject",
+    "z": "tab_smartclass",
+    "name": "load at start",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "6",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 150,
+    "y": 1380,
+    "wires": [
+      [
+        "sc_sql_compare"
+      ]
+    ]
+  },
+  {
+    "id": "sc_w_compare_btn",
+    "type": "ui-button",
+    "z": "tab_smartclass",
+    "group": "sc_g_compare",
+    "name": "",
+    "label": "Reload from SQLite",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "emulateClick": false,
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "",
+    "className": "",
+    "icon": "refresh",
+    "iconPosition": "left",
+    "payload": "reload",
+    "payloadType": "str",
+    "topic": "reload",
+    "topicType": "str",
+    "buttonColor": "",
+    "textColor": "",
+    "iconColor": "",
+    "enableClick": true,
+    "enablePointerdown": false,
+    "pointerdownPayload": "",
+    "pointerdownPayloadType": "str",
+    "enablePointerup": false,
+    "pointerupPayload": "",
+    "pointerupPayloadType": "str",
+    "x": 150,
+    "y": 1420,
+    "wires": [
+      [
+        "sc_sql_compare"
+      ]
+    ]
+  },
+  {
+    "id": "sc_sql_compare",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "fixed",
+    "sql": "SELECT model, category, MAX(CASE WHEN split='validation' AND metric='f1' THEN round(value,3) END) AS val_f1, MAX(CASE WHEN split='test' AND metric='f1' THEN round(value,3) END) AS test_f1, MAX(CASE WHEN split='test' AND metric='precision' THEN round(value,3) END) AS test_precision, MAX(CASE WHEN split='test' AND metric='recall' THEN round(value,3) END) AS test_recall, MAX(CASE WHEN split='cv' AND metric='f1_mean' THEN round(value,3) END) AS cv_f1_mean, MAX(CASE WHEN split='cv' AND metric='f1_std' THEN round(value,3) END) AS cv_f1_std, MAX(CASE WHEN split='compute' AND metric='median_ms' THEN round(value,2) END) AS latency_ms, MAX(run_id) AS run_id FROM model_metrics WHERE task='occupancy' AND run_id = (SELECT run_id FROM model_metrics WHERE task='occupancy' ORDER BY id DESC LIMIT 1) GROUP BY model ORDER BY val_f1 DESC",
+    "name": "SQLite model comparison",
+    "x": 400,
+    "y": 1400,
+    "wires": [
+      [
+        "sc_fmt_compare"
+      ]
+    ]
+  },
+  {
+    "id": "sc_fmt_compare",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Format model comparison",
+    "func": "// Rows from SQLite model_metrics (written by train_models.py / init_db.py). Never hard-coded.\nconst rows = Array.isArray(msg.payload) ? msg.payload : [];\nif (!rows.length) {\n  return [{ payload: [{ status: 'No training metrics in SQLite yet', fix: 'run: python init_db.py   (imports models/training_report.json), then press Reload' }] },\n          { payload: 'model_metrics table is empty' }];\n}\nconst deployable = rows.filter(r => r.category !== 'baseline');\nconst best = deployable.reduce((a, b) => (b.val_f1 > a.val_f1 ? b : a));\nconst table = rows.map(r => ({\n  model: r.model + (r.model === best.model ? '  ★ selected' : ''), category: r.category,\n  'validation F1 (selection)': r.val_f1, 'test F1 (held-out)': r.test_f1, 'test precision': r.test_precision,\n  'test recall': r.test_recall, '5-fold CV F1': r.cv_f1_mean === null ? 'n/a' : `${r.cv_f1_mean} ± ${r.cv_f1_std}`,\n  'latency ms': r.latency_ms }));\nreturn [{ payload: table },\n        { payload: `Selection rule: highest VALIDATION F1 (4 validation dates) → ${best.model}. Test F1 is reported only (6 held-out dates) and was never used for selection. Run ${rows[0].run_id}.` }];",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 560,
+    "y": 1440,
+    "wires": [
+      [
+        "sc_w_compare"
+      ],
+      [
+        "sc_w_compare_note"
+      ]
+    ]
+  },
+  {
+    "id": "sc_w_compare_note",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_compare",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "How to read",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 900,
+    "wires": []
+  },
+  {
+    "id": "sc_i_offline",
+    "type": "inject",
+    "z": "tab_smartclass",
+    "name": "load at start",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "6",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "x": 150,
+    "y": 1480,
+    "wires": [
+      [
+        "sc_sql_offline"
+      ]
+    ]
+  },
+  {
+    "id": "sc_w_offline_btn",
+    "type": "ui-button",
+    "z": "tab_smartclass",
+    "group": "sc_g_offline",
+    "name": "",
+    "label": "Reload from SQLite",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "emulateClick": false,
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "",
+    "className": "",
+    "icon": "refresh",
+    "iconPosition": "left",
+    "payload": "reload",
+    "payloadType": "str",
+    "topic": "reload",
+    "topicType": "str",
+    "buttonColor": "",
+    "textColor": "",
+    "iconColor": "",
+    "enableClick": true,
+    "enablePointerdown": false,
+    "pointerdownPayload": "",
+    "pointerdownPayloadType": "str",
+    "enablePointerup": false,
+    "pointerupPayload": "",
+    "pointerupPayloadType": "str",
+    "x": 150,
+    "y": 1520,
+    "wires": [
+      [
+        "sc_sql_offline"
+      ]
+    ]
+  },
+  {
+    "id": "sc_sql_offline",
+    "type": "sqlite",
+    "z": "tab_smartclass",
+    "mydb": "sc_db",
+    "sqlquery": "fixed",
+    "sql": "SELECT experiment, scenario, metric, value, unit, run_id FROM experiment_results WHERE run_id = (SELECT run_id FROM experiment_results ORDER BY id DESC LIMIT 1)",
+    "name": "SQLite experiment results",
+    "x": 400,
+    "y": 1500,
+    "wires": [
+      [
+        "sc_fmt_offline"
+      ]
+    ]
+  },
+  {
+    "id": "sc_fmt_offline",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Format experiment results",
+    "func": "// Registered offline results (run_experiments.py -> results/*.csv -> init_db.py -> SQLite). Never hard-coded.\nconst rows = Array.isArray(msg.payload) ? msg.payload : [];\nif (!rows.length) {\n  const empty = [{ status: 'No experiment results in SQLite yet', fix: 'run: python init_db.py (imports results/*.csv), then press Reload' }];\n  return [{ payload: empty }, { payload: [] }, { payload: 'experiment_results table is empty' }];\n}\nconst v = (exp, scen, metric) => { const r = rows.find(x => x.experiment === exp && x.scenario === scen && x.metric === metric); return r ? r.value : null; };\nconst pct = (x) => (x === null ? 'n/a' : `${x.toFixed(1)} %`);\nconst sources = ['oracle', 'random_forest', 'gradient_boosting', 'logistic_regression', 'decision_tree', 'lstm', 'mamba'];\nconst counterfactual = sources.map(src => ({\n  'occupancy input': src === 'oracle' ? 'camera label (oracle upper bound)' : src + (src === 'random_forest' ? '  ★ deployed' : ''),\n  'lighting saved [S]': pct(v('recorded_counterfactual', `room1_test|rules|${src}|lighting`, 'saved_pct')),\n  'chilled water saved [S] (thermal)': pct(v('recorded_counterfactual', `room1_test|rules|${src}|chilled_water`, 'saved_pct')),\n  'light OFF while occupied': pct(v('recorded_counterfactual', `room1_test|rules|${src}|comfort`, 'light_off_while_occupied_pct')) }));\nconst ctrl = [...new Set(rows.filter(r => r.experiment === 'closed_loop_simulation').map(r => r.scenario))];\nconst base = v('closed_loop_simulation', 'always_comfort', 'cooling_kwh_thermal');\nconst closed = ctrl.map(c => { const k = v('closed_loop_simulation', c, 'cooling_kwh_thermal');\n  return { controller: c, 'cooling [S] kWh thermal': k, 'vs always-comfort': base && k !== null ? `${(100 * (1 - k / base)).toFixed(1)} % less` : 'n/a',\n           'comfort violation (occupied steps)': pct(v('closed_loop_simulation', c, 'comfort_violation_pct')),\n           'AC switches / day': v('closed_loop_simulation', c, 'ac_switches_per_day') }; });\nreturn [{ payload: counterfactual }, { payload: closed },\n        { payload: `Run ${rows[0].run_id}. Upper table: recorded ROBOD energy re-scaled by our commands (counterfactual, rules controller). ` +\n                   'Lower table: grey-box room simulator with ASSUMED parameters. Neither is a measured real-world saving.' }];",
+    "outputs": 3,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 560,
+    "y": 1540,
+    "wires": [
+      [
+        "sc_w_offline_cf"
+      ],
+      [
+        "sc_w_offline_cl"
+      ],
+      [
+        "sc_w_offline_note"
+      ]
+    ]
+  },
+  {
+    "id": "sc_w_offline_cf",
+    "type": "ui-table",
+    "z": "tab_smartclass",
+    "group": "sc_g_offline",
+    "name": "Counterfactual savings table",
+    "label": "",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "maxrows": 0,
+    "passthru": false,
+    "autocols": true,
+    "showSearch": false,
+    "deselect": true,
+    "selectionType": "none",
+    "columns": [],
+    "mobileBreakpoint": "sm",
+    "mobileBreakpointType": "defaults",
+    "action": "replace",
+    "className": "",
+    "x": 1320,
+    "y": 1180,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_offline_cl",
+    "type": "ui-table",
+    "z": "tab_smartclass",
+    "group": "sc_g_offline",
+    "name": "Closed-loop simulation table",
+    "label": "",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "maxrows": 0,
+    "passthru": false,
+    "autocols": true,
+    "showSearch": false,
+    "deselect": true,
+    "selectionType": "none",
+    "columns": [],
+    "mobileBreakpoint": "sm",
+    "mobileBreakpointType": "defaults",
+    "action": "replace",
+    "className": "",
+    "x": 1320,
+    "y": 1220,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_offline_note",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_offline",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "What these numbers are",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 1260,
+    "wires": []
+  },
+  {
+    "id": "sc_w_compare",
+    "type": "ui-table",
+    "z": "tab_smartclass",
+    "group": "sc_g_compare",
+    "name": "Model performance table",
+    "label": "",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "maxrows": 0,
+    "passthru": false,
+    "autocols": true,
+    "showSearch": false,
+    "deselect": true,
+    "selectionType": "none",
+    "columns": [],
+    "mobileBreakpoint": "sm",
+    "mobileBreakpointType": "defaults",
+    "action": "replace",
+    "className": "",
+    "x": 1320,
+    "y": 860,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_c7",
+    "type": "comment",
+    "z": "tab_smartclass",
+    "name": "Dashboard controls: room selector, manual override, reset",
+    "info": "",
+    "x": 230,
+    "y": 1500,
+    "wires": []
+  },
+  {
+    "id": "sc_i_room",
+    "type": "inject",
+    "z": "tab_smartclass",
+    "name": "show room1 at start",
+    "props": [
+      {
+        "p": "payload"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "2",
+    "topic": "",
+    "payload": "room1",
+    "payloadType": "str",
+    "x": 140,
+    "y": 1540,
+    "wires": [
+      [
+        "sc_w_room"
+      ]
+    ]
+  },
+  {
+    "id": "sc_w_room",
+    "type": "ui-dropdown",
+    "z": "tab_smartclass",
+    "group": "sc_g_control",
+    "name": "",
+    "label": "Room shown",
+    "tooltip": "",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "multiple": false,
+    "chips": false,
+    "clearable": false,
+    "options": [
+      {
+        "label": "room1",
+        "value": "room1",
+        "type": "str"
+      },
+      {
+        "label": "room2",
+        "value": "room2",
+        "type": "str"
+      }
+    ],
+    "payload": "",
+    "topic": "room",
+    "topicType": "str",
+    "className": "",
+    "typeIsComboBox": true,
+    "msgTrigger": "onChange",
+    "x": 140,
+    "y": 1580,
+    "wires": [
+      [
+        "sc_select_room"
+      ]
+    ]
+  },
+  {
+    "id": "sc_select_room",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Select room",
+    "func": "global.set('ui_room', msg.payload);\nconst ov = global.get('override_' + msg.payload);\nconst clear = { payload: [] };   // an empty array clears a Dashboard 2.0 chart\nreturn [clear, clear, clear, clear, clear, clear, { payload: ov && ov.enabled ? `ON for ${msg.payload}: light ${ov.light || 'auto'}, AC ${ov.ac || 'auto'}` : `off (${msg.payload} is automatic)` }];",
+    "outputs": 7,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 1580,
+    "wires": [
+      [
+        "sc_w_chart"
+      ],
+      [
+        "sc_w_save_light"
+      ],
+      [
+        "sc_w_save_cool"
+      ],
+      [
+        "sc_w_chart_light"
+      ],
+      [
+        "sc_w_chart_cool"
+      ],
+      [
+        "sc_w_latency"
+      ],
+      [
+        "sc_w_override"
+      ]
+    ]
+  },
+  {
+    "id": "sc_w_ov_switch",
+    "type": "ui-switch",
+    "z": "tab_smartclass",
+    "name": "",
+    "label": "Manual override",
+    "group": "sc_g_control",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "decouple": false,
+    "topic": "enabled",
+    "topicType": "str",
+    "style": "",
+    "className": "",
+    "layout": "row-spread",
+    "clickableArea": "switch",
+    "onvalue": "true",
+    "onvalueType": "bool",
+    "onicon": "",
+    "oncolor": "",
+    "offvalue": "false",
+    "offvalueType": "bool",
+    "officon": "",
+    "offcolor": "",
+    "x": 150,
+    "y": 1640,
+    "wires": [
+      [
+        "sc_override"
+      ]
+    ]
+  },
+  {
+    "id": "sc_w_ov_light",
+    "type": "ui-dropdown",
+    "z": "tab_smartclass",
+    "group": "sc_g_control",
+    "name": "",
+    "label": "Override light",
+    "tooltip": "",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "multiple": false,
+    "chips": false,
+    "clearable": false,
+    "options": [
+      {
+        "label": "ON",
+        "value": "ON",
+        "type": "str"
+      },
+      {
+        "label": "DIM",
+        "value": "DIM",
+        "type": "str"
+      },
+      {
+        "label": "OFF",
+        "value": "OFF",
+        "type": "str"
+      }
+    ],
+    "payload": "",
+    "topic": "light",
+    "topicType": "str",
+    "className": "",
+    "typeIsComboBox": true,
+    "msgTrigger": "onChange",
+    "x": 150,
+    "y": 1680,
+    "wires": [
+      [
+        "sc_override"
+      ]
+    ]
+  },
+  {
+    "id": "sc_w_ov_ac",
+    "type": "ui-dropdown",
+    "z": "tab_smartclass",
+    "group": "sc_g_control",
+    "name": "",
+    "label": "Override AC",
+    "tooltip": "",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "multiple": false,
+    "chips": false,
+    "clearable": false,
+    "options": [
+      {
+        "label": "COMFORT",
+        "value": "COMFORT",
+        "type": "str"
+      },
+      {
+        "label": "BOOST",
+        "value": "BOOST",
+        "type": "str"
+      },
+      {
+        "label": "PRECOOL",
+        "value": "PRECOOL",
+        "type": "str"
+      },
+      {
+        "label": "ECO",
+        "value": "ECO",
+        "type": "str"
+      },
+      {
+        "label": "OFF",
+        "value": "OFF",
+        "type": "str"
+      }
+    ],
+    "payload": "",
+    "topic": "ac",
+    "topicType": "str",
+    "className": "",
+    "typeIsComboBox": true,
+    "msgTrigger": "onChange",
+    "x": 150,
+    "y": 1720,
+    "wires": [
+      [
+        "sc_override"
+      ]
+    ]
+  },
+  {
+    "id": "sc_override",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Manual override",
+    "func": "// Manual override for the room currently shown. The decision engine applies it on the next reading.\nconst room = global.get('ui_room') || 'room1';\nconst ov = global.get('override_' + room) || { enabled: false };\nov[msg.topic] = msg.payload;\nglobal.set('override_' + room, ov);\nreturn { payload: ov.enabled ? `ON for ${room}: light ${ov.light || 'auto'}, AC ${ov.ac || 'auto'}` : `off (${room} is automatic)` };",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 1680,
+    "wires": [
+      [
+        "sc_w_override"
+      ]
+    ]
+  },
+  {
+    "id": "sc_w_override",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_control",
+    "order": 5,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Override",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 100,
+    "wires": []
+  },
+  {
+    "id": "sc_w_reset",
+    "type": "ui-button",
+    "z": "tab_smartclass",
+    "group": "sc_g_control",
+    "name": "",
+    "label": "Reset demo state",
+    "order": 6,
+    "width": 0,
+    "height": 0,
+    "emulateClick": false,
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "",
+    "className": "",
+    "icon": "restart",
+    "iconPosition": "left",
+    "payload": "reset",
+    "payloadType": "str",
+    "topic": "reset",
+    "topicType": "str",
+    "buttonColor": "",
+    "textColor": "",
+    "iconColor": "",
+    "enableClick": true,
+    "enablePointerdown": false,
+    "pointerdownPayload": "",
+    "pointerdownPayloadType": "str",
+    "enablePointerup": false,
+    "pointerupPayload": "",
+    "pointerupPayloadType": "str",
+    "x": 150,
+    "y": 1780,
+    "wires": [
+      [
+        "sc_reset"
+      ]
+    ]
+  },
+  {
+    "id": "sc_reset",
+    "type": "function",
+    "z": "tab_smartclass",
+    "name": "Reset demo state",
+    "func": "// Forget duplicates, rule state, totals, pending commands and recent alerts so a day can be replayed again.\nfor (const key of flow.keys()) {\n  if (/^(seen_|state_|totals_|sent_|commanded_|stale_|lastSeen_)/.test(key) || ['duplicates', 'recent_alerts', 'pending', 'cmd_stats'].includes(key)) flow.set(key, undefined);\n}\nnode.status({ fill: 'blue', shape: 'dot', text: 'reset at ' + new Date().toLocaleTimeString() });\nconst clear = { payload: [] };\nreturn [clear, clear, clear, clear, clear, clear, { payload: [] }];",
+    "outputs": 7,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 380,
+    "y": 1780,
+    "wires": [
+      [
+        "sc_w_chart"
+      ],
+      [
+        "sc_w_save_light"
+      ],
+      [
+        "sc_w_save_cool"
+      ],
+      [
+        "sc_w_chart_light"
+      ],
+      [
+        "sc_w_chart_cool"
+      ],
+      [
+        "sc_w_latency"
+      ],
+      [
+        "sc_w_alerts"
+      ]
+    ]
+  },
+  {
+    "id": "sc_w_context",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_health",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Showing",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 660,
+    "wires": []
+  },
+  {
+    "id": "sc_w_devices",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_health",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Devices (MQTT Last Will status)",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 700,
+    "wires": []
+  },
+  {
+    "id": "sc_w_health",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_health",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Command delivery (Stages 7-8)",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 740,
+    "wires": []
+  },
+  {
+    "id": "sc_w_ml_latency",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_health",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "ML inference per reading",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 780,
+    "wires": []
+  },
+  {
+    "id": "sc_w_occ",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_state",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Occupancy [P]",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 140,
+    "wires": []
+  },
+  {
+    "id": "sc_w_arr",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_state",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "P(arrival in 30 min | empty) [P]",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 180,
+    "wires": []
+  },
+  {
+    "id": "sc_w_light_cmd",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_state",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Light command [S]",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 220,
+    "wires": []
+  },
+  {
+    "id": "sc_w_dqn",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_state",
+    "order": 8,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Dueling-DQN AC recommendation [P]",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 420,
+    "wires": []
+  },
+  {
+    "id": "sc_w_light_act",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_state",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Light actuator ack [S]",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 260,
+    "wires": []
+  },
+  {
+    "id": "sc_w_ac_cmd",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_state",
+    "order": 5,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "AC command [S]",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 300,
+    "wires": []
+  },
+  {
+    "id": "sc_w_ac_act",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_state",
+    "order": 6,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "AC actuator ack [S]",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 340,
+    "wires": []
+  },
+  {
+    "id": "sc_w_reason",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_state",
+    "order": 7,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Reason (priority: override > min hold > comfort guard > controller > fallback)",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 380,
+    "wires": []
+  },
+  {
+    "id": "sc_w_temp",
+    "type": "ui-gauge",
+    "z": "tab_smartclass",
+    "name": "",
+    "group": "sc_g_sensors",
+    "order": 1,
+    "value": "payload",
+    "valueType": "msg",
+    "width": 4,
+    "height": 3,
+    "gtype": "gauge-half",
+    "gstyle": "needle",
+    "title": "Temperature [M]",
+    "alwaysShowTitle": false,
+    "floatingTitlePosition": "top-left",
+    "units": "°C",
+    "icon": "",
+    "prefix": "",
+    "suffix": "",
+    "segments": [
+      {
+        "from": "16",
+        "color": "#5cd65c"
+      },
+      {
+        "from": "26",
+        "color": "#ffc800"
+      },
+      {
+        "from": "29",
+        "color": "#ea5353"
+      }
+    ],
+    "min": 16,
+    "max": 34,
+    "sizeThickness": 16,
+    "sizeGap": 4,
+    "sizeKeyThickness": 8,
+    "styleRounded": true,
+    "styleGlow": false,
+    "className": "",
+    "x": 1320,
+    "y": 460,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_lux",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_sensors",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Illuminance · CO2",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 500,
+    "wires": []
+  },
+  {
+    "id": "sc_w_wifi",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_sensors",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Wi-Fi · sound · humidity",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 540,
+    "wires": []
+  },
+  {
+    "id": "sc_w_truth",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_sensors",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Camera presence + count [M] (not a model input)",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 580,
+    "wires": []
+  },
+  {
+    "id": "sc_w_time",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_sensors",
+    "order": 5,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Reading time (+08:00)",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 620,
+    "wires": []
+  },
+  {
+    "id": "sc_w_models",
+    "type": "ui-table",
+    "z": "tab_smartclass",
+    "group": "sc_g_models",
+    "name": "Live predictions table",
+    "label": "",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "maxrows": 0,
+    "passthru": false,
+    "autocols": true,
+    "showSearch": false,
+    "deselect": true,
+    "selectionType": "none",
+    "columns": [],
+    "mobileBreakpoint": "sm",
+    "mobileBreakpointType": "defaults",
+    "action": "replace",
+    "className": "",
+    "x": 1320,
+    "y": 820,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_chart",
+    "type": "ui-chart",
+    "z": "tab_smartclass",
+    "group": "sc_g_occ",
+    "name": "",
+    "label": "Occupancy: P(occupied) [P] and camera presence [M]",
+    "order": 1,
+    "chartType": "line",
+    "category": "topic",
+    "categoryType": "msg",
+    "xAxisLabel": "",
+    "xAxisProperty": "",
+    "xAxisPropertyType": "timestamp",
+    "xAxisType": "time",
+    "xAxisFormat": "",
+    "xAxisFormatType": "auto",
+    "xmin": "",
+    "xmax": "",
+    "yAxisLabel": "0 – 1",
+    "yAxisProperty": "payload",
+    "yAxisPropertyType": "msg",
+    "ymin": "",
+    "ymax": "",
+    "bins": 10,
+    "action": "append",
+    "stackSeries": false,
+    "pointShape": "false",
+    "pointRadius": 2,
+    "showLegend": true,
+    "removeOlder": 1,
+    "removeOlderUnit": "3600",
+    "removeOlderPoints": "600",
+    "colors": [
+      "#0095FF",
+      "#FF7F0E",
+      "#2CA02C",
+      "#D62728",
+      "#A347E1",
+      "#8C564B",
+      "#E377C2",
+      "#7F7F7F",
+      "#BCBD22"
+    ],
+    "textColor": [
+      "#666666"
+    ],
+    "textColorDefault": true,
+    "gridColor": [
+      "#e5e5e5"
+    ],
+    "gridColorDefault": true,
+    "width": 12,
+    "height": 5,
+    "className": "",
+    "interpolation": "linear",
+    "x": 1320,
+    "y": 940,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_chart_light",
+    "type": "ui-chart",
+    "z": "tab_smartclass",
+    "group": "sc_g_energy",
+    "name": "",
+    "label": "Lighting energy [M]",
+    "order": 1,
+    "chartType": "line",
+    "category": "topic",
+    "categoryType": "msg",
+    "xAxisLabel": "",
+    "xAxisProperty": "",
+    "xAxisPropertyType": "timestamp",
+    "xAxisType": "time",
+    "xAxisFormat": "",
+    "xAxisFormatType": "auto",
+    "xmin": "",
+    "xmax": "",
+    "yAxisLabel": "kWh electrical / 5 min",
+    "yAxisProperty": "payload",
+    "yAxisPropertyType": "msg",
+    "ymin": "",
+    "ymax": "",
+    "bins": 10,
+    "action": "append",
+    "stackSeries": false,
+    "pointShape": "false",
+    "pointRadius": 2,
+    "showLegend": true,
+    "removeOlder": 1,
+    "removeOlderUnit": "3600",
+    "removeOlderPoints": "600",
+    "colors": [
+      "#0095FF",
+      "#FF7F0E",
+      "#2CA02C",
+      "#D62728",
+      "#A347E1",
+      "#8C564B",
+      "#E377C2",
+      "#7F7F7F",
+      "#BCBD22"
+    ],
+    "textColor": [
+      "#666666"
+    ],
+    "textColorDefault": true,
+    "gridColor": [
+      "#e5e5e5"
+    ],
+    "gridColorDefault": true,
+    "width": 6,
+    "height": 5,
+    "className": "",
+    "interpolation": "linear",
+    "x": 1320,
+    "y": 980,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_chart_cool",
+    "type": "ui-chart",
+    "z": "tab_smartclass",
+    "group": "sc_g_energy",
+    "name": "",
+    "label": "Chilled-water energy [M]",
+    "order": 2,
+    "chartType": "line",
+    "category": "topic",
+    "categoryType": "msg",
+    "xAxisLabel": "",
+    "xAxisProperty": "",
+    "xAxisPropertyType": "timestamp",
+    "xAxisType": "time",
+    "xAxisFormat": "",
+    "xAxisFormatType": "auto",
+    "xmin": "",
+    "xmax": "",
+    "yAxisLabel": "kWh THERMAL / 5 min",
+    "yAxisProperty": "payload",
+    "yAxisPropertyType": "msg",
+    "ymin": "",
+    "ymax": "",
+    "bins": 10,
+    "action": "append",
+    "stackSeries": false,
+    "pointShape": "false",
+    "pointRadius": 2,
+    "showLegend": true,
+    "removeOlder": 1,
+    "removeOlderUnit": "3600",
+    "removeOlderPoints": "600",
+    "colors": [
+      "#0095FF",
+      "#FF7F0E",
+      "#2CA02C",
+      "#D62728",
+      "#A347E1",
+      "#8C564B",
+      "#E377C2",
+      "#7F7F7F",
+      "#BCBD22"
+    ],
+    "textColor": [
+      "#666666"
+    ],
+    "textColorDefault": true,
+    "gridColor": [
+      "#e5e5e5"
+    ],
+    "gridColorDefault": true,
+    "width": 6,
+    "height": 5,
+    "className": "",
+    "interpolation": "linear",
+    "x": 1320,
+    "y": 1020,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_latency",
+    "type": "ui-chart",
+    "z": "tab_smartclass",
+    "group": "sc_g_latency",
+    "name": "",
+    "label": "Per command: round trip (server clock) and telemetry→actuator loop (node clock)",
+    "order": 1,
+    "chartType": "line",
+    "category": "topic",
+    "categoryType": "msg",
+    "xAxisLabel": "",
+    "xAxisProperty": "",
+    "xAxisPropertyType": "timestamp",
+    "xAxisType": "time",
+    "xAxisFormat": "",
+    "xAxisFormatType": "auto",
+    "xmin": "",
+    "xmax": "",
+    "yAxisLabel": "ms",
+    "yAxisProperty": "payload",
+    "yAxisPropertyType": "msg",
+    "ymin": "",
+    "ymax": "",
+    "bins": 10,
+    "action": "append",
+    "stackSeries": false,
+    "pointShape": "false",
+    "pointRadius": 2,
+    "showLegend": true,
+    "removeOlder": 1,
+    "removeOlderUnit": "3600",
+    "removeOlderPoints": "600",
+    "colors": [
+      "#0095FF",
+      "#FF7F0E",
+      "#2CA02C",
+      "#D62728",
+      "#A347E1",
+      "#8C564B",
+      "#E377C2",
+      "#7F7F7F",
+      "#BCBD22"
+    ],
+    "textColor": [
+      "#666666"
+    ],
+    "textColorDefault": true,
+    "gridColor": [
+      "#e5e5e5"
+    ],
+    "gridColorDefault": true,
+    "width": 12,
+    "height": 5,
+    "className": "",
+    "interpolation": "linear",
+    "x": 1320,
+    "y": 1340,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_save_light",
+    "type": "ui-chart",
+    "z": "tab_smartclass",
+    "group": "sc_g_savings",
+    "name": "",
+    "label": "Lighting (electrical) cumulative kWh",
+    "order": 1,
+    "chartType": "line",
+    "category": "topic",
+    "categoryType": "msg",
+    "xAxisLabel": "",
+    "xAxisProperty": "",
+    "xAxisPropertyType": "timestamp",
+    "xAxisType": "time",
+    "xAxisFormat": "",
+    "xAxisFormatType": "auto",
+    "xmin": "",
+    "xmax": "",
+    "yAxisLabel": "kWh",
+    "yAxisProperty": "payload",
+    "yAxisPropertyType": "msg",
+    "ymin": "",
+    "ymax": "",
+    "bins": 10,
+    "action": "append",
+    "stackSeries": false,
+    "pointShape": "false",
+    "pointRadius": 2,
+    "showLegend": true,
+    "removeOlder": 1,
+    "removeOlderUnit": "3600",
+    "removeOlderPoints": "600",
+    "colors": [
+      "#0095FF",
+      "#FF7F0E",
+      "#2CA02C",
+      "#D62728",
+      "#A347E1",
+      "#8C564B",
+      "#E377C2",
+      "#7F7F7F",
+      "#BCBD22"
+    ],
+    "textColor": [
+      "#666666"
+    ],
+    "textColorDefault": true,
+    "gridColor": [
+      "#e5e5e5"
+    ],
+    "gridColorDefault": true,
+    "width": 6,
+    "height": 5,
+    "className": "",
+    "interpolation": "linear",
+    "x": 1320,
+    "y": 1060,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_save_cool",
+    "type": "ui-chart",
+    "z": "tab_smartclass",
+    "group": "sc_g_savings",
+    "name": "",
+    "label": "Chilled water (THERMAL) cumulative kWh",
+    "order": 2,
+    "chartType": "line",
+    "category": "topic",
+    "categoryType": "msg",
+    "xAxisLabel": "",
+    "xAxisProperty": "",
+    "xAxisPropertyType": "timestamp",
+    "xAxisType": "time",
+    "xAxisFormat": "",
+    "xAxisFormatType": "auto",
+    "xmin": "",
+    "xmax": "",
+    "yAxisLabel": "kWh thermal",
+    "yAxisProperty": "payload",
+    "yAxisPropertyType": "msg",
+    "ymin": "",
+    "ymax": "",
+    "bins": 10,
+    "action": "append",
+    "stackSeries": false,
+    "pointShape": "false",
+    "pointRadius": 2,
+    "showLegend": true,
+    "removeOlder": 1,
+    "removeOlderUnit": "3600",
+    "removeOlderPoints": "600",
+    "colors": [
+      "#0095FF",
+      "#FF7F0E",
+      "#2CA02C",
+      "#D62728",
+      "#A347E1",
+      "#8C564B",
+      "#E377C2",
+      "#7F7F7F",
+      "#BCBD22"
+    ],
+    "textColor": [
+      "#666666"
+    ],
+    "textColorDefault": true,
+    "gridColor": [
+      "#e5e5e5"
+    ],
+    "gridColorDefault": true,
+    "width": 6,
+    "height": 5,
+    "className": "",
+    "interpolation": "linear",
+    "x": 1320,
+    "y": 1100,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_save_text",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_savings",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Savings so far [S]",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 1140,
+    "wires": []
+  },
+  {
+    "id": "sc_w_comfort",
+    "type": "ui-text",
+    "z": "tab_smartclass",
+    "group": "sc_g_comfort",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "name": "",
+    "label": "Comfort cost of the decisions",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "value": "payload",
+    "valueType": "msg",
+    "x": 1320,
+    "y": 1300,
+    "wires": []
+  },
+  {
+    "id": "sc_w_alerts",
+    "type": "ui-table",
+    "z": "tab_smartclass",
+    "group": "sc_g_alerts",
+    "name": "Alerts table",
+    "label": "",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "maxrows": 0,
+    "passthru": false,
+    "autocols": true,
+    "showSearch": false,
+    "deselect": true,
+    "selectionType": "none",
+    "columns": [],
+    "mobileBreakpoint": "sm",
+    "mobileBreakpointType": "defaults",
+    "action": "replace",
+    "className": "",
+    "x": 1320,
+    "y": 1380,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_w_popup",
+    "type": "ui-notification",
+    "z": "tab_smartclass",
+    "ui": "sc_ui_base",
+    "position": "top right",
+    "colorDefault": false,
+    "color": "#d62728",
+    "displayTime": "5",
+    "showCountdown": true,
+    "outputs": 1,
+    "allowDismiss": true,
+    "dismissText": "Close",
+    "allowConfirm": false,
+    "confirmText": "Confirm",
+    "raw": false,
+    "className": "",
+    "name": "Alert pop-up",
+    "x": 1320,
+    "y": 1420,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sc_catch",
+    "type": "catch",
+    "z": "tab_smartclass",
+    "name": "any node error",
+    "scope": null,
+    "uncaught": false,
+    "x": 140,
+    "y": 1860,
+    "wires": [
+      [
+        "sc_debug"
+      ]
+    ]
+  },
+  {
+    "id": "sc_debug",
+    "type": "debug",
+    "z": "tab_smartclass",
+    "name": "errors -> debug + log",
+    "active": true,
+    "tosidebar": true,
+    "console": true,
+    "tostatus": false,
+    "complete": "error",
+    "targetType": "msg",
+    "x": 380,
+    "y": 1860,
+    "wires": []
+  },
+  {
+    "id": "sc_c_widgets",
+    "type": "comment",
+    "z": "tab_smartclass",
+    "name": "Dashboard widgets (display only), in dashboard order",
+    "info": "",
+    "x": 1320,
+    "y": 60,
+    "wires": []
+  }
+]

@@ -1,0 +1,61 @@
+=== Exercise A: occupancy threshold 0.25 -> 0.50
+deployed: {} 'occupancy_on_above: 0.25,' -> 'occupancy_on_above: 0.50,'
+CONFIG: occupancy_on_above: 0.50, occupancy_off_below: 0.15
+  09:00  p=0.05  temp=24.5  ->  light OFF  AC ECO      (rules)   empty 15 min -> lights off, AC eco
+  09:05  p=0.20  temp=24.5  ->  light OFF  AC ECO      (rules)   empty 20 min -> lights off, AC eco
+  09:10  p=0.30  temp=24.5  ->  light OFF  AC ECO      (rules)   empty 25 min -> lights off, AC eco
+  09:15  p=0.45  temp=24.5  ->  light OFF  AC OFF      (rules)   empty 30 min, no arrival expected -> AC off
+  09:20  p=0.55  temp=24.5  ->  light ON   AC COMFORT  (rules)   occupied (p=0.55 random_forest)
+  09:25  p=0.35  temp=24.5  ->  light ON   AC COMFORT  (rules)   occupied (p=0.35 random_forest)
+  09:30  p=0.20  temp=24.5  ->  light ON   AC COMFORT  (rules)   occupied (p=0.20 random_forest)
+  09:35  p=0.12  temp=24.5  ->  light ON   AC COMFORT  (rules)   empty 0 min (p=0.12 random_forest); waiting 15 min
+  09:40  p=0.05  temp=24.5  ->  light ON   AC COMFORT  (rules)   empty 5 min (p=0.05 random_forest); waiting 15 min
+=========================== short test summary info ============================
+FAILED tests/test_rules.py::test_empty_room_needs_0_25_to_become_occupied - A...
+1 failed, 13 passed in 1.34s
+--- rollback
+deployed: {} 'occupancy_on_above: 0.50,' -> 'occupancy_on_above: 0.25,'
+14 passed in 1.38s
+
+=== Exercise B: BOOST margin 1.5 -> 0.5 C
+deployed: {} 'boost_above_comfort_c: 1.5,' -> 'boost_above_comfort_c: 0.5,'
+CONFIG: comfort_setpoint_c: 24.0, boost_above_comfort_c: 0.5
+  09:00  p=0.90  temp=24.0  ->  light ON   AC COMFORT  (rules)   occupied (p=0.90 random_forest)
+  09:05  p=0.90  temp=24.8  ->  light ON   AC BOOST    (rules)   occupied (p=0.90 random_forest), 24.8 C > comfort+0.5
+  09:10  p=0.90  temp=25.2  ->  light ON   AC BOOST    (rules)   occupied (p=0.90 random_forest), 25.2 C > comfort+0.5
+  09:15  p=0.90  temp=25.6  ->  light ON   AC BOOST    (rules)   occupied (p=0.90 random_forest), 25.6 C > comfort+0.5
+  09:20  p=0.90  temp=26.0  ->  light ON   AC BOOST    (rules)   occupied (p=0.90 random_forest), 26.0 C > comfort+0.5
+  09:25  p=0.90  temp=26.5  ->  light ON   AC BOOST    (rules)   occupied (p=0.90 random_forest), 26.5 C > comfort+0.5
+--- rollback
+deployed: {} 'boost_above_comfort_c: 0.5,' -> 'boost_above_comfort_c: 1.5,'
+
+=== Exercise C: grace period 15 -> 5 min, minimum hold 10 -> 20 min
+deployed: {} 'light_off_after_min: 15,' -> 'light_off_after_min: 5,'
+deployed: {} 'min_hold_min: 10,' -> 'min_hold_min: 20,'
+CONFIG: light_off_after_min: 5, ac_off_after_min: 30, min_hold_min: 20
+Part 1 - rules: grace period (light_off_after_min) and AC off (ac_off_after_min)
+  09:00  p=0.90  temp=24.5  ->  light ON   AC COMFORT  (rules)   occupied (p=0.90 random_forest)
+  09:05  p=0.90  temp=24.5  ->  light ON   AC COMFORT  (rules)   occupied (p=0.90 random_forest)
+  09:10  p=0.05  temp=24.5  ->  light ON   AC COMFORT  (rules)   empty 0 min (p=0.05 random_forest); waiting 5 min
+  09:15  p=0.05  temp=24.5  ->  light ON   AC COMFORT  (minimum hold)   empty 5 min -> lights off, AC eco [light held: min time] [AC held: min time]
+  09:20  p=0.05  temp=24.5  ->  light OFF  AC ECO      (rules)   empty 10 min -> lights off, AC eco
+  09:25  p=0.05  temp=24.5  ->  light OFF  AC ECO      (rules)   empty 15 min -> lights off, AC eco
+  09:30  p=0.05  temp=24.5  ->  light OFF  AC ECO      (rules)   empty 20 min -> lights off, AC eco
+  09:35  p=0.05  temp=24.5  ->  light OFF  AC ECO      (rules)   empty 25 min -> lights off, AC eco
+  09:40  p=0.05  temp=24.5  ->  light OFF  AC OFF      (rules)   empty 30 min, no arrival expected -> AC off
+  09:45  p=0.05  temp=24.5  ->  light OFF  AC OFF      (rules)   empty 35 min, no arrival expected -> AC off
+  09:50  p=0.05  temp=24.5  ->  light OFF  AC OFF      (rules)   empty 40 min, no arrival expected -> AC off
+Part 2 - DQN mode, the DQN flips COMFORT/OFF every reading in an occupied 24.5 C room:
+         switching DOWN waits min_hold_min; switching UP for an occupied room is immediate
+  09:00  p=0.90  temp=24.5  ->  light ON   AC COMFORT  (DQN)  DQN wanted COMFORT   occupied (p=0.90 random_forest) | AC by DQN: COMFORT
+  09:05  p=0.90  temp=24.5  ->  light ON   AC COMFORT  (minimum hold)  DQN wanted OFF   occupied (p=0.90 random_forest) | AC by DQN: OFF [AC held: min time]
+  09:10  p=0.90  temp=24.5  ->  light ON   AC COMFORT  (minimum hold)  DQN wanted OFF   occupied (p=0.90 random_forest) | AC by DQN: OFF [AC held: min time]
+  09:15  p=0.90  temp=24.5  ->  light ON   AC COMFORT  (DQN)  DQN wanted COMFORT   occupied (p=0.90 random_forest) | AC by DQN: COMFORT
+  09:20  p=0.90  temp=24.5  ->  light ON   AC OFF      (DQN)  DQN wanted OFF   occupied (p=0.90 random_forest) | AC by DQN: OFF
+  09:25  p=0.90  temp=24.5  ->  light ON   AC OFF      (DQN)  DQN wanted OFF   occupied (p=0.90 random_forest) | AC by DQN: OFF
+  09:30  p=0.90  temp=24.5  ->  light ON   AC OFF      (DQN)  DQN wanted OFF   occupied (p=0.90 random_forest) | AC by DQN: OFF
+  09:35  p=0.90  temp=24.5  ->  light ON   AC COMFORT  (DQN)  DQN wanted COMFORT   occupied (p=0.90 random_forest) | AC by DQN: COMFORT
+--- rollback
+deployed: {} 'light_off_after_min: 5,' -> 'light_off_after_min: 15,'
+deployed: {} 'min_hold_min: 20,' -> 'min_hold_min: 10,'
+32 passed in 2.31s

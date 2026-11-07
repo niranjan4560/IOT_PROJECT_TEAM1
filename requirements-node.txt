@@ -1,0 +1,4 @@
+# Laptop 2 (IoT NODE): dataset replay + simulated actuators. No ML libraries needed.
+numpy==2.2.6
+pandas==2.2.3
+paho-mqtt==2.1.0

@@ -1,0 +1,52 @@
+       source  on_above  off_below  occupied_rows  incorrect_light_off  incorrect_light_off_pct  lighting_saved_pct
+random_forest      0.60       0.40            285                   64                     22.5                50.4
+random_forest      0.50       0.30            285                   52                     18.2                40.6
+random_forest      0.40       0.25            285                   47                     16.5                38.4
+random_forest      0.30       0.20            285                   40                     14.0                33.2
+random_forest      0.25       0.15            285                   39                     13.7                31.3
+random_forest      0.20       0.10            285                   35                     12.3                27.4
+live predictions for room1_test: 1728 valid rows
+live predictions for room2_all_days: 8322 valid rows
+  recorded room1_test      rules oracle               done
+  recorded room1_test      rules random_forest        done
+  recorded room1_test      rules gradient_boosting    done
+  recorded room1_test      rules logistic_regression  done
+  recorded room1_test      rules decision_tree        done
+  recorded room1_test      rules lstm                 done
+  recorded room1_test      rules mamba                done
+  recorded room1_test      dqn   oracle               done
+  recorded room1_test      dqn   random_forest        done
+  recorded room1_test      dqn   gradient_boosting    done
+  recorded room1_test      dqn   logistic_regression  done
+  recorded room1_test      dqn   decision_tree        done
+  recorded room1_test      dqn   lstm                 done
+  recorded room1_test      dqn   mamba                done
+  recorded room2_all_days  rules oracle               done
+  recorded room2_all_days  rules random_forest        done
+  recorded room2_all_days  rules gradient_boosting    done
+  recorded room2_all_days  rules logistic_regression  done
+  recorded room2_all_days  rules decision_tree        done
+  recorded room2_all_days  rules lstm                 done
+  recorded room2_all_days  rules mamba                done
+  recorded room2_all_days  dqn   oracle               done
+  recorded room2_all_days  dqn   random_forest        done
+  recorded room2_all_days  dqn   gradient_boosting    done
+  recorded room2_all_days  dqn   logistic_regression  done
+  recorded room2_all_days  dqn   decision_tree        done
+  recorded room2_all_days  dqn   lstm                 done
+  recorded room2_all_days  dqn   mamba                done
+  closed-loop always_comfort               cooling    850.6 kWh_th  comfort viol   0.0%  switches/day 0.0
+  closed-loop timetable_07_20              cooling    509.5 kWh_th  comfort viol   0.0%  switches/day 2.0
+  closed-loop rules[oracle]                cooling    366.7 kWh_th  comfort viol   0.3%  switches/day 14.7
+  closed-loop rules[lstm]                  cooling    361.7 kWh_th  comfort viol   0.6%  switches/day 17.0
+  closed-loop rules[mamba]                 cooling    422.9 kWh_th  comfort viol   1.2%  switches/day 14.0
+  closed-loop rules[random_forest]         cooling    405.5 kWh_th  comfort viol   0.6%  switches/day 16.5
+  closed-loop dqn_raw[oracle]              cooling    127.5 kWh_th  comfort viol  22.4%  switches/day 23.5
+  closed-loop dqn_raw[lstm]                cooling    128.5 kWh_th  comfort viol  24.1%  switches/day 25.3
+  closed-loop dqn_raw[mamba]               cooling    133.8 kWh_th  comfort viol  20.9%  switches/day 24.2
+  closed-loop dqn_raw[random_forest]       cooling    130.0 kWh_th  comfort viol  25.9%  switches/day 25.3
+  closed-loop dqn_safe[oracle]             cooling    138.0 kWh_th  comfort viol   3.2%  switches/day 15.2
+  closed-loop dqn_safe[lstm]               cooling    150.9 kWh_th  comfort viol   7.0%  switches/day 17.7
+  closed-loop dqn_safe[mamba]              cooling    156.1 kWh_th  comfort viol   9.9%  switches/day 17.2
+  closed-loop dqn_safe[random_forest]      cooling    152.8 kWh_th  comfort viol  12.2%  switches/day 17.3
+Done in 443 s. Results in results/ and results/figures/ (exp-20261027-150655)

@@ -1,0 +1,3 @@
+stopped ml_service (pid 5213)
+stopped node-red (pid 5185)
+stopped mosquitto (pid 5183)

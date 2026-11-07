@@ -1,0 +1,23 @@
+$ python tools/send_test_message.py valid
+published to smartclass/room1/telemetry: {"room_id": "room1", "timestamp": "2021-12-13T10:58:34+08:00", "source": "demo_test_message", "sent_at_ms": 17…
+$ python tools/send_test_message.py bad_json
+published to smartclass/room1/telemetry: {this is not json
+$ python tools/send_test_message.py out_of_range
+published to smartclass/room1/telemetry: {"room_id": "room1", "timestamp": "2021-12-13T10:58:41+08:00", "source": "demo_test_message", "sent_at_ms": 17…
+$ python tools/send_test_message.py missing_field
+published to smartclass/room1/telemetry: {"room_id": "room1", "timestamp": "2021-12-13T10:58:44+08:00", "source": "demo_test_message", "sent_at_ms": 17…
+$ python tools/send_test_message.py unknown_room
+published to smartclass/room9/telemetry: {"room_id": "room9", "timestamp": "2021-12-13T10:58:48+08:00", "source": "demo_test_message", "sent_at_ms": 17…
+$ python tools/send_test_message.py duplicate
+published to smartclass/room1/telemetry: {"room_id": "room1", "timestamp": "2021-12-13T10:58:51+08:00", "source": "demo_test_message", "sent_at_ms": 17…
+published to smartclass/room1/telemetry: {"room_id": "room1", "timestamp": "2021-12-13T10:58:51+08:00", "source": "demo_test_message", "sent_at_ms": 17…
+
+--- SQLite alerts (newest first)
+('2026-11-04T23:58:53+08:00', 'room1', 'TELEMETRY_RESUMED', 'readings are arriving again')
+('2026-11-04T23:58:49+08:00', 'room1', 'STALE_TELEMETRY', 'no valid reading for 15 s; holding last commands')
+('2026-11-04T23:58:48+08:00', 'room9', 'INVALID_READING', 'unknown room "room9"')
+('2026-11-04T23:58:44+08:00', 'room1', 'INVALID_READING', '2021-12-13T10:58:44+08:00: temperature_c is missing')
+('2026-11-04T23:58:41+08:00', 'room1', 'INVALID_READING', '2021-12-13T10:58:41+08:00: co2_ppm=99999 is outside 300..5000')
+('2026-11-04T23:58:38+08:00', 'room1', 'INVALID_READING', 'payload is not valid JSON')
+--- telemetry rows from demo_test_message
+(2,)

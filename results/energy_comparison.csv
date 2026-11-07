@@ -1,0 +1,6 @@
+model,category,next_lighting_kwh_mae,next_lighting_kwh_rmse,next_lighting_kwh_r2,next_chilled_water_kwh_mae,next_chilled_water_kwh_rmse,next_chilled_water_kwh_r2
+mean_baseline,baseline,0.05393,0.06859,-0.0008,0.66878,0.83743,-0.0179
+persistence_baseline,baseline,0.00223,0.01278,0.9652,0.45009,0.86684,-0.0906
+linear_regression,traditional,0.00284,0.01266,0.9659,0.46633,0.68622,0.3165
+random_forest,ensemble,0.01443,0.02775,0.8361,0.2442,0.48478,0.6589
+gradient_boosting,ensemble,0.00404,0.01269,0.9657,0.24288,0.45427,0.7005

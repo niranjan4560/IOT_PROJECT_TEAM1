@@ -1,0 +1,90 @@
+{
+  "run_id": "train-20261027-143655",
+  "primary_model": "random_forest",
+  "seq_len": 12,
+  "tabular_features": [
+    "wifi_devices",
+    "co2_ppm",
+    "sound_db",
+    "humidity_pct",
+    "temperature_c",
+    "illuminance_lux",
+    "hour_sin",
+    "hour_cos",
+    "day_of_week",
+    "wifi_mean_30min",
+    "co2_delta_15min",
+    "co2_delta_window",
+    "sound_max_30min",
+    "temp_delta_15min"
+  ],
+  "sequence_features": [
+    "wifi_devices",
+    "co2_ppm",
+    "sound_db",
+    "humidity_pct",
+    "temperature_c",
+    "illuminance_lux",
+    "hour_sin",
+    "hour_cos",
+    "day_of_week"
+  ],
+  "energy_features": [
+    "wifi_devices",
+    "co2_ppm",
+    "temperature_c",
+    "illuminance_lux",
+    "outdoor_temp_c",
+    "setpoint_c",
+    "hour_sin",
+    "hour_cos",
+    "day_of_week",
+    "lighting_kwh",
+    "chilled_water_kwh"
+  ],
+  "energy_model": {
+    "name": "random_forest",
+    "file": "energy_random_forest.joblib"
+  },
+  "precool_threshold": 0.2,
+  "dqn_file": "../dqn_controller.pt",
+  "trained_on": "all 29 Room 1 dates",
+  "occupancy_models": {
+    "logistic_regression": {
+      "file": "occupancy_logistic_regression.joblib",
+      "category": "traditional",
+      "kind": "tabular",
+      "research": ""
+    },
+    "decision_tree": {
+      "file": "occupancy_decision_tree.joblib",
+      "category": "traditional",
+      "kind": "tabular",
+      "research": ""
+    },
+    "random_forest": {
+      "file": "occupancy_random_forest.joblib",
+      "category": "ensemble",
+      "kind": "tabular",
+      "research": ""
+    },
+    "gradient_boosting": {
+      "file": "occupancy_gradient_boosting.joblib",
+      "category": "ensemble",
+      "kind": "tabular",
+      "research": ""
+    },
+    "lstm": {
+      "file": "occupancy_lstm.pt",
+      "category": "deep_learning",
+      "kind": "sequence",
+      "research": "B: Hou et al. 2025 (LSTM occupancy estimator)"
+    },
+    "mamba": {
+      "file": "occupancy_mamba.pt",
+      "category": "deep_learning",
+      "kind": "sequence",
+      "research": "A: OCC-Mamba family (Mamba selective SSM)"
+    }
+  }
+}

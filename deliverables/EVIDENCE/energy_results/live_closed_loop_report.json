@@ -1,0 +1,47 @@
+{
+  "telemetry_rows": 518,
+  "decisions": 518,
+  "predictions_per_model": {
+    "decision_tree": 518,
+    "gradient_boosting": 518,
+    "logistic_regression": 518,
+    "lstm": 518,
+    "mamba": 518,
+    "random_forest": 518
+  },
+  "ml_latency_ms_per_model": {
+    "decision_tree": 1.57,
+    "gradient_boosting": 4.29,
+    "logistic_regression": 2.97,
+    "lstm": 1.06,
+    "mamba": 3.61,
+    "random_forest": 15.52
+  },
+  "commands_by_status": {
+    "ACKED": 46
+  },
+  "acknowledgement_rate_pct": 100.0,
+  "roundtrip_ms": {
+    "n": 46,
+    "mean": 90.9,
+    "median": 88.0,
+    "p95": 112.0,
+    "max": 139.0
+  },
+  "loop_latency_ms": {
+    "n": 46,
+    "mean": 117.3,
+    "median": 95.5,
+    "p95": 152.8,
+    "max": 474.0
+  },
+  "command_switches_per_data_day": {
+    "room1/ac": 13.0,
+    "room1/light": 2.33
+  },
+  "alerts_by_type": {
+    "DEVICE_OFFLINE": 5,
+    "STALE_TELEMETRY": 3,
+    "TELEMETRY_RESUMED": 2
+  }
+}

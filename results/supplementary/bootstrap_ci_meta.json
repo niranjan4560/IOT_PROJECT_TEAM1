@@ -1,0 +1,16 @@
+{
+  "method": "cluster bootstrap over test dates (percentile 95 % CI)",
+  "reps": 2000,
+  "seed": 42,
+  "test_dates": [
+    "2021-09-20",
+    "2021-09-21",
+    "2021-09-24",
+    "2021-09-30",
+    "2021-12-15",
+    "2021-12-22"
+  ],
+  "rows": 1717,
+  "primary_model": "random_forest",
+  "registered_run": "train-20261027-143655"
+}

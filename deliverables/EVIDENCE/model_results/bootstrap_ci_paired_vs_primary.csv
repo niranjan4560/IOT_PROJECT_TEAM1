@@ -1,0 +1,6 @@
+model,vs,mean_diff_f1,ci95_low,ci95_high,share_of_resamples_better
+logistic_regression,random_forest,0.091,-0.231,0.447,0.739
+decision_tree,random_forest,-0.007,-0.062,0.075,0.35
+gradient_boosting,random_forest,-0.006,-0.048,0.044,0.377
+lstm,random_forest,0.016,-0.307,0.183,0.633
+mamba,random_forest,0.093,-0.178,0.378,0.768

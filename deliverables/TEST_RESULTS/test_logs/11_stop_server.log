@@ -1,0 +1,3 @@
+stopped ml_service (pid 3474)
+stopped node-red (pid 3446)
+stopped mosquitto (pid 3444)

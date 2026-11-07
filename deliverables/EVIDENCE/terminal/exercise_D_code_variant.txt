@@ -1,0 +1,8 @@
+=== Exercise D code variant: co2_ppm range 300..5000 -> 300..700
+deployed: {} 'co2_ppm: [300, 5000, true]' -> 'co2_ppm: [300, 700, true]'
+published to smartclass/room1/telemetry: {"room_id": "room1", "timestamp": "2021-12-13T10:09:52+08:00", "source": "demo_test_message", "sent_at_ms": 17…
+('2026-11-05T00:09:52+08:00', 'room1', 'INVALID_READING', '2021-12-13T10:09:52+08:00: co2_ppm=750 is outside 300..700')
+--- rollback
+deployed: {} 'co2_ppm: [300, 700, true]' -> 'co2_ppm: [300, 5000, true]'
+published to smartclass/room1/telemetry: {"room_id": "room1", "timestamp": "2021-12-13T10:10:00+08:00", "source": "demo_test_message", "sent_at_ms": 17…
+('TELEMETRY_RESUMED', 'readings are arriving again') (3,)

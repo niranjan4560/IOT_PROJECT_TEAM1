@@ -1,0 +1,23 @@
+occupancy majority_class       val F1 0.000  test F1 0.000  train 0.0s  latency 0.02 ms
+occupancy logistic_regression  val F1 0.731  test F1 0.646  train 0.0s  latency 0.88 ms
+occupancy decision_tree        val F1 0.760  test F1 0.544  train 0.0s  latency 0.86 ms
+occupancy random_forest        val F1 0.848  test F1 0.559  train 1.0s  latency 10.09 ms
+occupancy gradient_boosting    val F1 0.819  test F1 0.556  train 0.7s  latency 2.52 ms
+occupancy lstm                 val F1 0.714  test F1 0.593  train 4.8s  latency 0.40 ms
+occupancy mamba                val F1 0.757  test F1 0.651  train 24.9s  latency 2.21 ms
+              model      category                                      research    input  val_f1  test_accuracy  test_precision  test_recall  test_f1  cv_f1_mean  cv_f1_std  room2_f1  train_s  latency_ms  peak_mem_mb  size_kb  parameters
+     majority_class      baseline                                                tabular  0.0000         0.7997          0.0000       0.0000   0.0000      0.0000     0.0000    0.0000     0.00       0.021          0.2      1.1         NaN
+logistic_regression   traditional                                                tabular  0.7308         0.8585          0.6472       0.6453   0.6463      0.6581     0.1524    0.6788     0.02       0.875          2.6      2.3         NaN
+      decision_tree   traditional                                                tabular  0.7602         0.8177          0.5452       0.5436   0.5444      0.6178     0.1580    0.6569     0.04       0.859          0.3      5.7         NaN
+      random_forest      ensemble                                                tabular  0.8477         0.8375          0.6125       0.5145   0.5592      0.7332     0.1117    0.6674     1.03      10.093          5.2   4235.3         NaN
+  gradient_boosting      ensemble                                                tabular  0.8194         0.8462          0.6600       0.4797   0.5556      0.6829     0.1527    0.6352     0.68       2.525          0.7    728.8         NaN
+               lstm deep_learning B: Hou et al. 2025 (LSTM occupancy estimator) sequence  0.7140         0.8719          0.8163       0.4651   0.5926      0.6146     0.1420    0.6365     4.85       0.397        183.2     25.7      5537.0
+              mamba deep_learning     A: OCC-Mamba family (Mamba selective SSM) sequence  0.7575         0.8841          0.8194       0.5407   0.6515      0.6657     0.1200    0.5702    24.86       2.215        163.3     77.0     17217.0
+               model    category  next_lighting_kwh_mae  next_lighting_kwh_rmse  next_lighting_kwh_r2  next_chilled_water_kwh_mae  next_chilled_water_kwh_rmse  next_chilled_water_kwh_r2
+       mean_baseline    baseline                0.05393                 0.06859               -0.0008                     0.66878                      0.83743                    -0.0179
+persistence_baseline    baseline                0.00223                 0.01278                0.9652                     0.45009                      0.86684                    -0.0906
+   linear_regression traditional                0.00284                 0.01266                0.9659                     0.46633                      0.68622                     0.3165
+       random_forest    ensemble                0.01443                 0.02775                0.8361                     0.24420                      0.48478                     0.6589
+   gradient_boosting    ensemble                0.00404                 0.01269                0.9657                     0.24288                      0.45427                     0.7005
+Primary occupancy model (by validation F1): random_forest
+Saved models/eval, models/final, models/dqn_controller.pt, models/training_report.json (train-20261027-143655)

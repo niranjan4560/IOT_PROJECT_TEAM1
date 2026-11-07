@@ -1,0 +1,18 @@
+PASS  Python >= 3.10                           
+PASS  import numpy                             
+PASS  import pandas                            
+PASS  import paho.mqtt.client                  
+PASS  .env present                             
+PASS  node credentials in .env                 
+PASS  node password is not a placeholder       
+PASS  data/combined_Room1.csv                  
+PASS  data/combined_Room2.csv                  
+PASS  MQTT login as sc_node at 127.0.0.1:1883  
+10 passed, 0 failed
+Replaying 288 rows of data/combined_Room1.csv as room1 to 127.0.0.1:1883
+Published 100 rows; latest 2021-09-20T08:15:00+08:00
+Published 200 rows; latest 2021-09-20T16:35:00+08:00
+Finished after publishing 288 readings
+Replay finished; actuators still running - Ctrl+C to stop.
+
+Stopping...

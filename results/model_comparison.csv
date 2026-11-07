@@ -1,0 +1,8 @@
+model,category,research,input,val_f1,test_accuracy,test_precision,test_recall,test_f1,cv_f1_mean,cv_f1_std,room2_f1,train_s,latency_ms,peak_mem_mb,size_kb,parameters
+majority_class,baseline,,tabular,0.0,0.7997,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.021,0.2,1.1,
+logistic_regression,traditional,,tabular,0.7308,0.8585,0.6472,0.6453,0.6463,0.6581,0.1524,0.6788,0.02,0.875,2.6,2.3,
+decision_tree,traditional,,tabular,0.7602,0.8177,0.5452,0.5436,0.5444,0.6178,0.158,0.6569,0.04,0.859,0.3,5.7,
+random_forest,ensemble,,tabular,0.8477,0.8375,0.6125,0.5145,0.5592,0.7332,0.1117,0.6674,1.03,10.093,5.2,4235.3,
+gradient_boosting,ensemble,,tabular,0.8194,0.8462,0.66,0.4797,0.5556,0.6829,0.1527,0.6352,0.68,2.525,0.7,728.8,
+lstm,deep_learning,B: Hou et al. 2025 (LSTM occupancy estimator),sequence,0.714,0.8719,0.8163,0.4651,0.5926,0.6146,0.142,0.6365,4.85,0.397,183.2,25.7,5537.0
+mamba,deep_learning,A: OCC-Mamba family (Mamba selective SSM),sequence,0.7575,0.8841,0.8194,0.5407,0.6515,0.6657,0.12,0.5702,24.86,2.215,163.3,77.0,17217.0
